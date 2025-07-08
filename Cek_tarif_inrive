@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cek Tarif inDrive</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    input, button { padding: 10px; margin: 8px 0; width: 100%; box-sizing: border-box; }
+    #hasil { margin-top: 20px; }
+    .warning { color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <h2>Cek Tarif inDrive</h2>
+
+  <input id="asal" placeholder="Lokasi Jemput" type="text">
+  <input id="tujuan" placeholder="Lokasi Tujuan" type="text">
+  <input id="tawaran" placeholder="Tawaran Harga (Rp)" type="number">
+  <button onclick="cekTarif()">Hitung</button>
+
+  <div id="hasil"></div>
+
+  <script>
+    let asalAutocomplete, tujuanAutocomplete;
+
+    function initAutocomplete() {
+      asalAutocomplete = new google.maps.places.Autocomplete(document.getElementById('asal'));
+      tujuanAutocomplete = new google.maps.places.Autocomplete(document.getElementById('tujuan'));
+    }
+
+    function cekTarif() {
+      const asal = document.getElementById('asal').value;
+      const tujuan = document.getElementById('tujuan').value;
+      const tawaran = parseInt(document.getElementById('tawaran').value);
+
+      if (!asal || !tujuan || isNaN(tawaran)) {
+        alert('Harap isi semua kolom dengan benar.');
+        return;
+      }
+
+      const service = new google.maps.DistanceMatrixService();
+      service.getDistanceMatrix({
+        origins: [asal],
+        destinations: [tujuan],
+        travelMode: 'DRIVING'
+      }, function(response, status) {
+        if (status !== 'OK') {
+          alert('Gagal menghitung jarak: ' + status);
+          return;
+        }
+
+        const jarakMeter = response.rows[0].elements[0].distance.value;
+        const jarakKm = jarakMeter / 1000;
+
+        const biayaTetap = 7000;
+        const tarifPerKm = 2500;
+        const tarifMinPerKm = 2000;
+
+        const totalNormal = Math.round(jarakKm * tarifPerKm + biayaTetap);
+        const totalMinimum = Math.round(jarakKm * tarifMinPerKm + biayaTetap);
+
+        let hasil = `
+          <p>Jarak: <b>${jarakKm.toFixed(2)} km</b></p>
+          <p>Estimasi Tarif Normal (Rp2500/km + 7rb): <b>Rp ${totalNormal.toLocaleString()}</b></p>
+          <p>Estimasi Tarif Minimum Layak: <b>Rp ${totalMinimum.toLocaleString()}</b></p>
+          <p>Harga Tawaran Anda: <b>Rp ${tawaran.toLocaleString()}</b></p>
+        `;
+
+        if (tawaran < totalMinimum) {
+          hasil += `<p class="warning">⚠️ Tawaran Anda terlalu rendah, kemungkinan besar tidak akan diterima driver!</p>`;
+        }
+
+        document.getElementById('hasil').innerHTML = hasil;
+      });
+    }
+  </script>
+
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEsbn9W4ivUesB15wmDuMhOT4JR6Mq9Bs&libraries=places&callback=initAutocomplete">
+  </script>
+
+</body>
+</html>
