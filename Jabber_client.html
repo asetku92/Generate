@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Jabber via Web</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/strophe.js/1.2.16/strophe.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    input, textarea, button {
+      margin: 8px 0;
+      padding: 10px;
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    hr {
+      border: 0;
+      height: 1px;
+      background: #ddd;
+      margin: 20px 0;
+    }
+    #log {
+      background-color: #f8f8f8;
+      font-family: monospace;
+      min-height: 200px;
+    }
+    .status {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+    .connected { background: #dff0d8; color: #3c763d; }
+    .disconnected { background: #f2dede; color: #a94442; }
+    .connecting { background: #fcf8e3; color: #8a6d3b; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h3>Login Jabber</h3>
+    <input id="jid" placeholder="JID (misal: kios@jabber.xmltronik.com)"><br>
+    <input id="pass" type="password" placeholder="Password"><br>
+    <button id="loginBtn" onclick="connect()">Login</button>
+    
+    <hr>
+    
+    <div id="status" class="status disconnected">Status: Tidak terhubung</div>
+    
+    <textarea id="log" rows="10" readonly></textarea><br><br>
+    
+    <input id="to" placeholder="Tujuan JID (misal: center@jabber.xmltronik.com)"><br>
+    <input id="msg" placeholder="Format perintah transaksi (misal: pulsa.0812xxx.10000.pin)"><br>
+    <button id="sendBtn" onclick="sendMsg()" disabled>Kirim Pesan</button>
+  </div>
+
+  <script>
+    let conn = null;
+    let isConnected = false;
+
+    // Fungsi untuk update UI berdasarkan status koneksi
+    function updateUI() {
+      const loginBtn = document.getElementById('loginBtn');
+      const sendBtn = document.getElementById('sendBtn');
+      const statusDiv = document.getElementById('status');
+      
+      if (isConnected) {
+        loginBtn.textContent = 'Logout';
+        loginBtn.style.backgroundColor = '#d9534f';
+        sendBtn.disabled = false;
+        statusDiv.textContent = 'Status: Terhubung';
+        statusDiv.className = 'status connected';
+      } else {
+        loginBtn.textContent = 'Login';
+        loginBtn.style.backgroundColor = '#4CAF50';
+        sendBtn.disabled = true;
+        statusDiv.textContent = 'Status: Tidak terhubung';
+        statusDiv.className = 'status disconnected';
+      }
+    }
+
+    function log(message) {
+      const timestamp = new Date().toLocaleTimeString();
+      const logElement = document.getElementById("log");
+      logElement.value += `[${timestamp}] ${message}\n`;
+      logElement.scrollTop = logElement.scrollHeight;
+    }
+
+    function connect() {
+      if (isConnected) {
+        conn.disconnect();
+        log("ℹ️ Memutuskan koneksi...");
+        isConnected = false;
+        updateUI();
+        return;
+      }
+
+      const jid = document.getElementById("jid").value.trim();
+      const pass = document.getElementById("pass").value.trim();
+
+      if (!jid || !pass) {
+        log("❌ Harap isi JID dan password");
+        return;
+      }
+
+      conn = new Strophe.Connection("https://jabber.xmltronik.com/http-bind");
+      
+      // Update UI untuk status connecting
+      document.getElementById('status').textContent = 'Status: Menghubungkan...';
+      document.getElementById('status').className = 'status connecting';
+      
+      log("⏳ Menghubungkan ke server...");
+      
+      conn.connect(jid, pass, function (status) {
+        if (status === Strophe.Status.CONNECTED) {
+          isConnected = true;
+          log("✅ Login berhasil");
+          conn.addHandler(onMessage, null, "message", null, null, null);
+          conn.send($pres().tree());
+        } else if (status === Strophe.Status.DISCONNECTED) {
+          isConnected = false;
+          log("❌ Terputus dari server");
+        } else if (status === Strophe.Status.AUTHFAIL) {
+          isConnected = false;
+          log("❌ Login gagal (cek JID & password)");
+        } else if (status === Strophe.Status.CONNFAIL) {
+          isConnected = false;
+          log("❌ Gagal terhubung ke server");
+        } else if (status === Strophe.Status.ERROR) {
+          isConnected = false;
+          log("❌ Terjadi kesalahan");
+        }
+        updateUI();
+      });
+    }
+
+    function sendMsg() {
+      if (!isConnected) {
+        log("❌ Silakan login terlebih dahulu");
+        return;
+      }
+
+      const to = document.getElementById("to").value.trim();
+      const msg = document.getElementById("msg").value.trim();
+
+      if (!to || !msg) {
+        log("❌ Harap isi JID tujuan dan pesan");
+        return;
+      }
+
+      try {
+        const message = $msg({to: to, type: 'chat'}).c("body").t(msg);
+        conn.send(message);
+        log(`📤 Terkirim ke ${to}: ${msg}`);
+        document.getElementById("msg").value = "";
+      } catch (error) {
+        log(`❌ Gagal mengirim pesan: ${error}`);
+      }
+    }
+
+    function onMessage(msg) {
+      const from = msg.getAttribute("from");
+      const body = msg.getElementsByTagName("body")[0];
+      if (body) {
+        const msgText = Strophe.getText(body);
+        log(`📥 Balasan dari ${from}: ${msgText}`);
+      }
+      return true;
+    }
+
+    // Inisialisasi UI
+    updateUI();
+  </script>
+</body>
+</html>
