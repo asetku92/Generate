@@ -254,7 +254,7 @@
             // Validasi tawaran
             const warningElement = document.getElementById("warning");
             if (offerPrice > 0 && offerPrice < (fairPrice * 0.9)) {
-                warningElement.textContent = "Tawaran Anda terlalu rendah (minimal 90% dari tarif wajar)";
+                warningElement.textContent = "Tawaran penumpang terlalu rendah (tidak wajar)";
                 warningElement.style.display = "block";
             } else {
                 warningElement.style.display = "none";
