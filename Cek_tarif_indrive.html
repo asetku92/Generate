@@ -222,22 +222,20 @@
         <h1>Tawarkan Ongkos Anda</h1>
         <p style="text-align: center; margin-bottom: 20px; color: #666;">Anda dapat mengubah ongkos yang direkomendasikan</p>
         
-        <div class="recommended-price" id="recommended-price">Rp28.000</div>
-        
         <div class="form-group">
             <div class="section-title">Jenis Layanan</div>
             <div class="service-option">
                 <input type="radio" id="passenger" name="service-type" value="passenger" checked>
-                <label for="passenger">Penumpang</label>
+                <label for="passenger">Penumpang (Rp2.325/km, min. Rp11.000)</label>
             </div>
             <div class="service-option">
                 <input type="radio" id="courier" name="service-type" value="courier">
-                <label for="courier">Kurir</label>
+                <label for="courier">Kurir (Rp2.000/km, min. Rp10.000)</label>
             </div>
         </div>
         
         <div class="form-group">
-            <label for="offer-price">Tawaran Harga</label>
+            <label for="offer-price">Tawaran Harga (Minimal 10% dari tarif wajar)</label>
             <div class="price-input">
                 <input type="number" id="offer-price" placeholder="Masukkan tawaran harga Anda">
             </div>
@@ -261,23 +259,28 @@
                 <span class="result-value" id="distance">-</span>
             </div>
             <div class="result-item">
+                <span class="result-label">Harga per km:</span>
+                <span class="result-value" id="per-km">-</span>
+            </div>
+            <div class="result-item">
                 <span class="result-label">Estimasi Tarif Wajar:</span>
                 <span class="result-value" id="fair-price">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Tawaran Minimal (10%):</span>
+                <span class="result-value" id="min-offer">-</span>
             </div>
             <div class="result-item">
                 <span class="result-label">Harga Tawaran Anda:</span>
                 <span class="result-value" id="user-offer">-</span>
             </div>
             <div class="warning" id="warning">
-                Tawaran Anda terlalu rendah dari estimasi tarif wajar!
+                Tawaran Anda terlalu rendah dari minimal 10% tarif wajar!
             </div>
         </div>
         
-        <div class="location-info" id="location-info" style="display: none;">
-            <p><strong>Tunai</strong></p>
-            <p>Terima pengemudi terdekat secara otomatis dengan biaya <strong id="auto-price">Rp28.000</strong></p>
-            <p id="pickup-location">-</p>
-            <p id="destination-location">-</p>
+        <div class="recommended-price" id="recommended-price" style="display: none;">
+            Tarif yang direkomendasikan: <span id="rec-price">-</span>
         </div>
     </div>
 
@@ -289,22 +292,6 @@
             
             const pickupAutocomplete = new google.maps.places.Autocomplete(pickupInput);
             const destinationAutocomplete = new google.maps.places.Autocomplete(destinationInput);
-            
-            // Update lokasi info saat tempat dipilih
-            pickupAutocomplete.addListener('place_changed', updateLocationInfo);
-            destinationAutocomplete.addListener('place_changed', updateLocationInfo);
-        }
-
-        // Update informasi lokasi
-        function updateLocationInfo() {
-            const pickup = document.getElementById('pickup').value;
-            const destination = document.getElementById('destination').value;
-            
-            if (pickup && destination) {
-                document.getElementById('pickup-location').textContent = pickup;
-                document.getElementById('destination-location').textContent = destination;
-                document.getElementById('location-info').style.display = 'block';
-            }
         }
 
         // Hitung jarak menggunakan Distance Matrix API
@@ -327,22 +314,27 @@
             });
         }
 
-        // Hitung estimasi tarif
+        // Pembulatan ke kelipatan 500
+        function roundTo500(amount) {
+            return Math.ceil(amount / 500) * 500;
+        }
+
+        // Hitung estimasi tarif berdasarkan aturan baru
         function calculateFairPrice(distance, serviceType) {
             let pricePerKm, minPrice;
             
             if (serviceType === 'passenger') {
-                pricePerKm = 2500;
+                pricePerKm = 2325;
                 minPrice = 11000;
             } else {
                 pricePerKm = 2000;
                 minPrice = 10000;
             }
             
-            const baseFee = 7000;
-            const calculatedPrice = baseFee + (distance * pricePerKm);
+            const calculatedPrice = distance * pricePerKm;
+            const roundedPrice = roundTo500(calculatedPrice);
             
-            return Math.max(calculatedPrice, minPrice);
+            return Math.max(roundedPrice, minPrice);
         }
 
         // Format angka ke Rupiah
@@ -364,16 +356,22 @@
             
             calculateDistance(pickup, destination, function(distance) {
                 const fairPrice = calculateFairPrice(distance, serviceType);
-                const isLowOffer = offerPrice > 0 && offerPrice < fairPrice;
+                const minOffer = Math.ceil(fairPrice * 0.1 / 500) * 500; // Minimal 10% dibulatkan 500
+                const isLowOffer = offerPrice > 0 && offerPrice < minOffer;
                 
-                // Update recommended price
-                document.getElementById('recommended-price').textContent = formatRupiah(fairPrice);
-                document.getElementById('auto-price').textContent = formatRupiah(fairPrice);
+                // Tampilkan harga per km
+                const pricePerKm = serviceType === 'passenger' ? 2325 : 2000;
+                document.getElementById('per-km').textContent = formatRupiah(pricePerKm) + '/km';
                 
                 // Tampilkan hasil
                 document.getElementById('distance').textContent = distance.toFixed(1) + ' km';
                 document.getElementById('fair-price').textContent = formatRupiah(fairPrice);
+                document.getElementById('min-offer').textContent = formatRupiah(minOffer);
                 document.getElementById('user-offer').textContent = offerPrice > 0 ? formatRupiah(offerPrice) : '-';
+                
+                // Tampilkan harga rekomendasi
+                document.getElementById('rec-price').textContent = formatRupiah(fairPrice);
+                document.getElementById('recommended-price').style.display = 'block';
                 
                 // Tampilkan peringatan jika tawaran terlalu rendah
                 const warningElement = document.getElementById('warning');
@@ -383,19 +381,14 @@
                     warningElement.style.display = 'none';
                 }
                 
-                // Tampilkan hasil dan info lokasi
+                // Tampilkan hasil
                 document.getElementById('result').style.display = 'block';
-                updateLocationInfo();
             });
         });
 
         // Inisialisasi saat halaman dimuat
         window.onload = function() {
             initAutocomplete();
-            
-            // Set default recommended price
-            document.getElementById('recommended-price').textContent = formatRupiah(28000);
-            document.getElementById('auto-price').textContent = formatRupiah(28000);
         };
     </script>
 </body>
