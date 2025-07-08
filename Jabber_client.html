@@ -1,238 +1,390 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jabber Client Dinamis</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/strophe.js/1.2.16/strophe.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: #f5f5f5;
-    }
-    .container {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    input, textarea, button {
-      margin: 8px 0;
-      padding: 10px;
-      width: 100%;
-      box-sizing: border-box;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    button:disabled {
-      background-color: #cccccc;
-      cursor: not-allowed;
-    }
-    hr {
-      border: 0;
-      height: 1px;
-      background: #ddd;
-      margin: 20px 0;
-    }
-    #log {
-      background-color: #f8f8f8;
-      font-family: monospace;
-      min-height: 200px;
-      white-space: pre-wrap;
-    }
-    .status {
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 4px;
-    }
-    .connected { background: #dff0d8; color: #3c763d; }
-    .disconnected { background: #f2dede; color: #a94442; }
-    .connecting { background: #fcf8e3; color: #8a6d3b; }
-    .config-section {
-      background: #f0f7ff;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 15px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XMPP Client Nyata</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/strophe.js/1.6.4/strophe.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #login-section, #chat-section {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        #chat-section {
+            display: none;
+        }
+        input, button {
+            padding: 8px;
+            margin: 5px 0;
+        }
+        #message-area {
+            height: 300px;
+            border: 1px solid #ddd;
+            overflow-y: auto;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #contacts-list {
+            margin-bottom: 20px;
+        }
+        .contact {
+            padding: 5px;
+            cursor: pointer;
+        }
+        .contact:hover {
+            background-color: #f0f0f0;
+        }
+        .online {
+            color: green;
+        }
+        .offline {
+            color: gray;
+        }
+        .message {
+            margin: 5px 0;
+            padding: 5px;
+        }
+        .incoming {
+            background-color: #f0f0f0;
+        }
+        .outgoing {
+            background-color: #e0f7fa;
+            text-align: right;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Jabber Client Dinamis</h2>
+    <h1>XMPP Client</h1>
     
-    <div class="config-section">
-      <h3>Konfigurasi Server</h3>
-      <input id="boshEndpoint" type="text" placeholder="BOSH Endpoint (contoh: https://jabber.example.com/http-bind)" value="https://st24.co.id/http-bind">
+    <!-- Login Section -->
+    <div id="login-section">
+        <h2>Login</h2>
+        <input type="text" id="jid" placeholder="user@example.com" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <input type="text" id="server" placeholder="xmpp.example.com (optional)">
+        <button id="login-btn">Login</button>
     </div>
-    
-    <div class="config-section">
-      <h3>Login</h3>
-      <input id="jid" type="text" placeholder="JID Anda (contoh: user@domain.com)">
-      <input id="pass" type="password" placeholder="Password">
-      <button id="loginBtn" onclick="connect()">Login</button>
+
+    <!-- Chat Section -->
+    <div id="chat-section">
+        <h2>Chat</h2>
+        <div id="user-info"></div>
+        
+        <h3>Contacts</h3>
+        <div id="contacts-list"></div>
+        
+        <div id="message-area"></div>
+        
+        <div>
+            <input type="text" id="message-input" placeholder="Type your message..." disabled>
+            <button id="send-btn" disabled>Send</button>
+        </div>
+        
+        <div>
+            <input type="text" id="add-contact-input" placeholder="Contact JID">
+            <button id="add-contact-btn">Add Contact</button>
+        </div>
     </div>
-    
-    <hr>
-    
-    <div id="status" class="status disconnected">Status: Tidak terhubung</div>
-    
-    <textarea id="log" rows="10" readonly></textarea>
-    
-    <hr>
-    
-    <div class="config-section">
-      <h3>Kirim Pesan</h3>
-      <input id="targetJid" type="text" placeholder="JID Tujuan (contoh: penerima@domain.com)" value="xmltronikmantapu77@st24.co.id">
-      <input id="msg" placeholder="Isi pesan Anda">
-      <button id="sendBtn" onclick="sendMsg()" disabled>Kirim Pesan</button>
-    </div>
-  </div>
 
-  <script>
-    // Variabel global
-    let conn = null;
-    let isConnected = false;
+    <script>
+        // Global variables
+        let connection = null;
+        let currentUser = null;
+        let currentChat = null;
+        const contacts = {};
+        const messages = {};
 
-    // Fungsi untuk menampilkan log
-    function log(message) {
-      const timestamp = new Date().toLocaleTimeString();
-      const logElement = document.getElementById("log");
-      logElement.value += `[${timestamp}] ${message}\n`;
-      logElement.scrollTop = logElement.scrollHeight;
-    }
+        // DOM elements
+        const loginSection = document.getElementById('login-section');
+        const chatSection = document.getElementById('chat-section');
+        const jidInput = document.getElementById('jid');
+        const passwordInput = document.getElementById('password');
+        const serverInput = document.getElementById('server');
+        const loginBtn = document.getElementById('login-btn');
+        const userInfo = document.getElementById('user-info');
+        const contactsList = document.getElementById('contacts-list');
+        const messageArea = document.getElementById('message-area');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        const addContactInput = document.getElementById('add-contact-input');
+        const addContactBtn = document.getElementById('add-contact-btn');
 
-    // Fungsi untuk update tampilan UI
-    function updateUI() {
-      const loginBtn = document.getElementById('loginBtn');
-      const sendBtn = document.getElementById('sendBtn');
-      const statusDiv = document.getElementById('status');
-      
-      if (isConnected) {
-        loginBtn.textContent = 'Logout';
-        loginBtn.style.backgroundColor = '#d9534f';
-        sendBtn.disabled = false;
-        statusDiv.textContent = 'Status: Terhubung';
-        statusDiv.className = 'status connected';
-      } else {
-        loginBtn.textContent = 'Login';
-        loginBtn.style.backgroundColor = '#4CAF50';
-        sendBtn.disabled = true;
-        statusDiv.textContent = 'Status: Tidak terhubung';
-        statusDiv.className = 'status disconnected';
-      }
-    }
+        // Initialize
+        loginBtn.addEventListener('click', login);
+        sendBtn.addEventListener('click', sendMessage);
+        addContactBtn.addEventListener('click', addContact);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
 
-    // Fungsi untuk koneksi ke server Jabber
-    function connect() {
-      // Jika sudah terhubung, lakukan disconnect
-      if (isConnected) {
-        conn.disconnect();
-        log("Memutuskan koneksi...");
-        isConnected = false;
-        updateUI();
-        return;
-      }
+        // Login function
+        function login() {
+            const jid = jidInput.value.trim();
+            const password = passwordInput.value;
+            const server = serverInput.value.trim() || jid.split('@')[1];
 
-      const jid = document.getElementById("jid").value.trim();
-      const pass = document.getElementById("pass").value.trim();
-      const boshEndpoint = document.getElementById("boshEndpoint").value.trim();
+            if (!jid || !password) {
+                alert('Please enter both JID and password');
+                return;
+            }
 
-      // Validasi input
-      if (!jid || !pass || !boshEndpoint) {
-        log("Error: JID, password, dan BOSH endpoint harus diisi");
-        return;
-      }
-
-      // Buat koneksi baru
-      conn = new Strophe.Connection(boshEndpoint, {
-        withCredentials: false
-      });
-      
-      // Update status UI
-      document.getElementById('status').textContent = 'Status: Menghubungkan...';
-      document.getElementById('status').className = 'status connecting';
-      
-      log(`Menghubungkan ke ${jid} via ${boshEndpoint}...`);
-      
-      // Hubungkan ke server
-      conn.connect(jid, pass, function(status) {
-        if (status === Strophe.Status.CONNECTED) {
-          isConnected = true;
-          log("✅ Berhasil terhubung ke server Jabber");
-          conn.addHandler(onMessage, null, "message", null, null, null);
-          conn.send($pres().tree()); // Kirim presence
-        } else if (status === Strophe.Status.DISCONNECTED) {
-          isConnected = false;
-          log("❌ Terputus dari server");
-        } else if (status === Strophe.Status.AUTHFAIL) {
-          isConnected = false;
-          log("❌ Autentikasi gagal (JID/password salah)");
-        } else if (status === Strophe.Status.CONNFAIL) {
-          isConnected = false;
-          log("❌ Gagal terhubung ke server");
-        } else if (status === Strophe.Status.ERROR) {
-          isConnected = false;
-          log("❌ Terjadi kesalahan");
+            // Create connection
+            connection = new Strophe.Connection(`wss://${server}:5280/ws`);
+            
+            connection.connect(jid, password, onConnect);
         }
-        updateUI();
-      });
-    }
 
-    // Fungsi untuk mengirim pesan
-    function sendMsg() {
-      if (!isConnected) {
-        log("Error: Silakan login terlebih dahulu");
-        return;
-      }
+        // Connection handler
+        function onConnect(status) {
+            if (status === Strophe.Status.CONNECTED) {
+                console.log('XMPP connected!');
+                currentUser = jidInput.value.trim();
+                
+                // Update UI
+                loginSection.style.display = 'none';
+                chatSection.style.display = 'block';
+                userInfo.innerHTML = `Logged in as: <strong>${currentUser}</strong>`;
+                messageInput.disabled = false;
+                sendBtn.disabled = false;
+                
+                // Set up handlers
+                setupHandlers();
+                
+                // Send initial presence
+                connection.send($pres().c('priority').t('1'));
+                
+                // Request roster
+                connection.send($iq({type: 'get'}).c('query', {xmlns: 'jabber:iq:roster'}));
+                
+            } else if (status === Strophe.Status.ERROR) {
+                alert('Login failed. Please check your credentials.');
+            }
+        }
 
-      const targetJid = document.getElementById("targetJid").value.trim();
-      const msg = document.getElementById("msg").value.trim();
+        // Setup XMPP handlers
+        function setupHandlers() {
+            // Message handler
+            connection.addHandler(onMessage, null, 'message', 'chat');
+            
+            // Presence handler
+            connection.addHandler(onPresence, null, 'presence');
+            
+            // Roster handler
+            connection.addHandler(onRoster, 'jabber:iq:roster', 'iq', 'set');
+        }
 
-      if (!targetJid || !msg) {
-        log("Error: JID tujuan dan pesan harus diisi");
-        return;
-      }
+        // Message received
+        function onMessage(msg) {
+            const from = msg.getAttribute('from').split('/')[0];
+            const body = msg.getElementsByTagName('body')[0]?.textContent;
+            
+            if (body) {
+                // Store message
+                if (!messages[from]) messages[from] = [];
+                messages[from].push({from: from, body: body, type: 'incoming'});
+                
+                // Display if current chat
+                if (currentChat === from) {
+                    displayMessages(from);
+                } else {
+                    // Update contact with notification
+                    if (contacts[from]) {
+                        contacts[from].hasNew = true;
+                        updateContactDisplay(from);
+                    }
+                }
+            }
+            return true;
+        }
 
-      try {
-        const message = $msg({to: targetJid, type: 'chat'}).c("body").t(msg);
-        conn.send(message);
-        log(`📤 Mengirim ke ${targetJid}: ${msg}`);
-        document.getElementById("msg").value = "";
-      } catch (error) {
-        log(`❌ Gagal mengirim pesan: ${error}`);
-      }
-    }
+        // Presence received
+        function onPresence(presence) {
+            const from = presence.getAttribute('from');
+            const bareJid = from.split('/')[0];
+            const type = presence.getAttribute('type');
+            
+            // Skip our own presence
+            if (bareJid === currentUser) return true;
+            
+            // Initialize contact if new
+            if (!contacts[bareJid]) {
+                contacts[bareJid] = {
+                    jid: bareJid,
+                    name: bareJid,
+                    status: 'offline',
+                    show: '',
+                    hasNew: false
+                };
+                addContactToUI(contacts[bareJid]);
+            }
+            
+            // Update status
+            if (type === 'unavailable') {
+                contacts[bareJid].status = 'offline';
+                contacts[bareJid].show = '';
+            } else {
+                const show = presence.getElementsByTagName('show')[0]?.textContent || '';
+                contacts[bareJid].status = show ? show : 'online';
+                contacts[bareJid].show = show;
+            }
+            
+            updateContactDisplay(bareJid);
+            return true;
+        }
 
-    // Handler untuk menerima pesan
-    function onMessage(msg) {
-      const from = msg.getAttribute("from");
-      const body = msg.getElementsByTagName("body")[0];
-      if (body) {
-        const msgText = Strophe.getText(body);
-        log(`📥 Pesan dari ${from}: ${msgText}`);
-      }
-      return true;
-    }
+        // Roster received
+        function onRoster(iq) {
+            const items = iq.getElementsByTagName('item');
+            
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                const jid = item.getAttribute('jid');
+                const name = item.getAttribute('name') || jid;
+                
+                if (!contacts[jid]) {
+                    contacts[jid] = {
+                        jid: jid,
+                        name: name,
+                        status: 'offline',
+                        show: '',
+                        hasNew: false
+                    };
+                    addContactToUI(contacts[jid]);
+                } else {
+                    contacts[jid].name = name;
+                    updateContactDisplay(jid);
+                }
+            }
+            
+            // Send roster result
+            connection.send($iq({type: 'result', id: iq.getAttribute('id')}));
+            
+            return true;
+        }
 
-    // Inisialisasi UI saat pertama kali load
-    updateUI();
-    
-    // Info awal
-    log("🔵 Aplikasi Jabber Client siap digunakan");
-    log("🔵 Silakan isi konfigurasi server dan login");
-  </script>
+        // Add contact to UI
+        function addContactToUI(contact) {
+            const contactElement = document.createElement('div');
+            contactElement.className = `contact ${contact.status}`;
+            contactElement.dataset.jid = contact.jid;
+            contactElement.innerHTML = `
+                ${contact.name} 
+                <span class="status">(${contact.status})</span>
+                ${contact.hasNew ? '<span style="color:red;"> [new]</span>' : ''}
+            `;
+            
+            contactElement.addEventListener('click', () => {
+                currentChat = contact.jid;
+                contact.hasNew = false;
+                updateContactDisplay(contact.jid);
+                displayMessages(contact.jid);
+            });
+            
+            contactsList.appendChild(contactElement);
+        }
+
+        // Update contact display
+        function updateContactDisplay(jid) {
+            const contact = contacts[jid];
+            const element = document.querySelector(`.contact[data-jid="${jid}"]`);
+            
+            if (element) {
+                element.className = `contact ${contact.status}`;
+                element.innerHTML = `
+                    ${contact.name} 
+                    <span class="status">(${contact.status})</span>
+                    ${contact.hasNew ? '<span style="color:red;"> [new]</span>' : ''}
+                `;
+            }
+        }
+
+        // Display messages
+        function displayMessages(jid) {
+            messageArea.innerHTML = '';
+            
+            if (!messages[jid] || messages[jid].length === 0) {
+                messageArea.innerHTML = '<div>No messages yet</div>';
+                return;
+            }
+            
+            messages[jid].forEach(msg => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${msg.type}`;
+                messageDiv.innerHTML = `
+                    <strong>${msg.type === 'incoming' ? msg.from : 'You'}:</strong> 
+                    ${msg.body}
+                `;
+                messageArea.appendChild(messageDiv);
+            });
+            
+            messageArea.scrollTop = messageArea.scrollHeight;
+        }
+
+        // Send message
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || !currentChat) return;
+            
+            // Create and send message
+            const msg = $msg({
+                to: currentChat,
+                type: 'chat'
+            }).c('body').t(message);
+            
+            connection.send(msg);
+            
+            // Store and display
+            if (!messages[currentChat]) messages[currentChat] = [];
+            messages[currentChat].push({from: currentUser, body: message, type: 'outgoing'});
+            
+            displayMessages(currentChat);
+            messageInput.value = '';
+        }
+
+        // Add contact
+        function addContact() {
+            const jid = addContactInput.value.trim();
+            if (!jid) return;
+            
+            // Create roster update
+            const iq = $iq({type: 'set'})
+                .c('query', {xmlns: 'jabber:iq:roster'})
+                .c('item', {jid: jid, subscription: 'none'});
+            
+            connection.send(iq);
+            addContactInput.value = '';
+            
+            // Add to local contacts if new
+            if (!contacts[jid]) {
+                contacts[jid] = {
+                    jid: jid,
+                    name: jid,
+                    status: 'offline',
+                    show: '',
+                    hasNew: false
+                };
+                addContactToUI(contacts[jid]);
+            }
+        }
+
+        // Helper functions for building stanzas
+        function $msg(attrs) {
+            return new Strophe.Builder('message', attrs);
+        }
+        function $pres(attrs) {
+            return new Strophe.Builder('presence', attrs);
+        }
+        function $iq(attrs) {
+            return new Strophe.Builder('iq', attrs);
+        }
+    </script>
 </body>
 </html>
