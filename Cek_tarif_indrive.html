@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Estimasi Tarif inDrive</title>
+    <title>Kalkulator Tarif inDrive</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEsbn9W4ivUesB15wmDuMhOT4JR6Mq9Bs&libraries=places"></script>
     <style>
         :root {
-            --primary: #6a5acd;
-            --secondary: #9370db;
-            --accent: #483d8b;
-            --background: #1a1a2e;
-            --text: #e6e6fa;
-            --glow: 0 0 15px rgba(106, 90, 205, 0.6);
-            --card-bg: rgba(26, 26, 46, 0.8);
+            --primary: #FF6B00;
+            --secondary: #FF9500;
+            --accent: #FF3D00;
+            --background: #f5f5f5;
+            --text: #333333;
+            --card-bg: #ffffff;
+            --warning: #FF3D00;
         }
 
         * {
@@ -25,7 +25,7 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, var(--background), #16213e);
+            background-color: var(--background);
             color: var(--text);
             min-height: 100vh;
             padding: 20px;
@@ -36,40 +36,45 @@
 
         .container {
             width: 100%;
-            max-width: 600px;
+            max-width: 500px;
             background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: var(--glow);
-            border: 1px solid rgba(106, 90, 205, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
             text-align: center;
-            margin-bottom: 30px;
-            color: #fff;
+            margin-bottom: 20px;
+            color: var(--primary);
             font-weight: 600;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            font-size: 24px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin: 15px 0 10px;
+            color: var(--primary);
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
-            color: #d8bfd8;
+            color: #555;
         }
 
         input, select {
             width: 100%;
             padding: 12px 15px;
             border-radius: 10px;
-            border: 1px solid rgba(106, 90, 205, 0.5);
-            background: rgba(26, 26, 46, 0.7);
+            border: 1px solid #ddd;
+            background: #fff;
             color: var(--text);
             font-family: 'Poppins', sans-serif;
             font-size: 16px;
@@ -78,8 +83,8 @@
 
         input:focus, select:focus {
             outline: none;
-            border-color: var(--secondary);
-            box-shadow: 0 0 10px rgba(147, 112, 219, 0.5);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(255, 107, 0, 0.2);
         }
 
         .btn {
@@ -93,34 +98,28 @@
             font-weight: 500;
             width: 100%;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(106, 90, 205, 0.4);
             margin-top: 10px;
         }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(106, 90, 205, 0.6);
-        }
-
-        .btn:active {
-            transform: translateY(0);
+            opacity: 0.9;
         }
 
         .result {
-            margin-top: 30px;
+            margin-top: 25px;
             padding: 20px;
             border-radius: 10px;
-            background: rgba(26, 26, 46, 0.6);
-            border: 1px solid rgba(106, 90, 205, 0.3);
+            background: #fff;
+            border: 1px solid #eee;
             display: none;
         }
 
         .result-item {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
-            border-bottom: 1px dashed rgba(147, 112, 219, 0.3);
             padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
         }
 
         .result-item:last-child {
@@ -131,88 +130,132 @@
 
         .result-label {
             font-weight: 500;
-            color: #d8bfd8;
+            color: #666;
         }
 
         .result-value {
             font-weight: 600;
-            color: #fff;
+            color: var(--text);
         }
 
         .warning {
-            color: #ff6b6b;
+            color: var(--warning);
             font-weight: 500;
             margin-top: 15px;
             text-align: center;
             display: none;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 0.8; }
-            50% { opacity: 1; }
-            100% { opacity: 0.8; }
-        }
-
-        .pac-container {
-            background-color: var(--background);
-            font-family: 'Poppins', sans-serif;
-            border-radius: 0 0 10px 10px;
-            border: 1px solid var(--primary);
-            box-shadow: var(--glow);
-        }
-
-        .pac-item {
-            color: var(--text);
             padding: 10px;
-            border-bottom: 1px solid rgba(106, 90, 205, 0.3);
+            background: rgba(255, 61, 0, 0.1);
+            border-radius: 8px;
         }
 
-        .pac-item:hover {
-            background-color: var(--accent);
+        .recommended-price {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 15px 0;
         }
 
-        .pac-item-query {
-            color: #d8bfd8;
+        .price-input {
+            position: relative;
         }
 
-        @media (max-width: 768px) {
+        .price-input:before {
+            content: "Rp";
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-weight: 500;
+        }
+
+        .price-input input {
+            padding-left: 40px;
+        }
+
+        .location-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .location-info p {
+            margin-bottom: 5px;
+        }
+
+        .location-info strong {
+            color: var(--primary);
+        }
+
+        .service-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .service-option input {
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .service-option label {
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 480px) {
             .container {
-                padding: 20px;
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 20px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Kalkulator Estimasi Tarif inDrive</h1>
+        <h1>Tawarkan Ongkos Anda</h1>
+        <p style="text-align: center; margin-bottom: 20px; color: #666;">Anda dapat mengubah ongkos yang direkomendasikan</p>
+        
+        <div class="recommended-price" id="recommended-price">Rp28.000</div>
         
         <div class="form-group">
-            <label for="pickup">Lokasi Penjemputan</label>
-            <input type="text" id="pickup" placeholder="Masukkan lokasi penjemputan" autocomplete="off">
+            <div class="section-title">Jenis Layanan</div>
+            <div class="service-option">
+                <input type="radio" id="passenger" name="service-type" value="passenger" checked>
+                <label for="passenger">Penumpang</label>
+            </div>
+            <div class="service-option">
+                <input type="radio" id="courier" name="service-type" value="courier">
+                <label for="courier">Kurir</label>
+            </div>
         </div>
         
         <div class="form-group">
-            <label for="destination">Lokasi Tujuan</label>
-            <input type="text" id="destination" placeholder="Masukkan lokasi tujuan" autocomplete="off">
+            <label for="offer-price">Tawaran Harga</label>
+            <div class="price-input">
+                <input type="number" id="offer-price" placeholder="Masukkan tawaran harga Anda">
+            </div>
         </div>
         
         <div class="form-group">
-            <label for="service-type">Jenis Layanan</label>
-            <select id="service-type">
-                <option value="passenger">Penumpang</option>
-                <option value="courier">Kurir</option>
-            </select>
-        </div>
-        
-        <div class="form-group">
-            <label for="offer-price">Tawaran Harga (Rp)</label>
-            <input type="number" id="offer-price" placeholder="Masukkan tawaran harga Anda">
+            <div class="section-title">Lokasi</div>
+            <label for="pickup">Penjemputan</label>
+            <input type="text" id="pickup" placeholder="Masukkan lokasi penjemputan">
+            
+            <label for="destination" style="margin-top: 10px;">Tujuan</label>
+            <input type="text" id="destination" placeholder="Masukkan lokasi tujuan">
         </div>
         
         <button class="btn" id="calculate-btn">Hitung Estimasi</button>
         
         <div class="result" id="result">
+            <div class="section-title">Hasil Perhitungan</div>
             <div class="result-item">
                 <span class="result-label">Jarak Tempuh:</span>
                 <span class="result-value" id="distance">-</span>
@@ -229,6 +272,13 @@
                 Tawaran Anda terlalu rendah dari estimasi tarif wajar!
             </div>
         </div>
+        
+        <div class="location-info" id="location-info" style="display: none;">
+            <p><strong>Tunai</strong></p>
+            <p>Terima pengemudi terdekat secara otomatis dengan biaya <strong id="auto-price">Rp28.000</strong></p>
+            <p id="pickup-location">-</p>
+            <p id="destination-location">-</p>
+        </div>
     </div>
 
     <script>
@@ -239,6 +289,22 @@
             
             const pickupAutocomplete = new google.maps.places.Autocomplete(pickupInput);
             const destinationAutocomplete = new google.maps.places.Autocomplete(destinationInput);
+            
+            // Update lokasi info saat tempat dipilih
+            pickupAutocomplete.addListener('place_changed', updateLocationInfo);
+            destinationAutocomplete.addListener('place_changed', updateLocationInfo);
+        }
+
+        // Update informasi lokasi
+        function updateLocationInfo() {
+            const pickup = document.getElementById('pickup').value;
+            const destination = document.getElementById('destination').value;
+            
+            if (pickup && destination) {
+                document.getElementById('pickup-location').textContent = pickup;
+                document.getElementById('destination-location').textContent = destination;
+                document.getElementById('location-info').style.display = 'block';
+            }
         }
 
         // Hitung jarak menggunakan Distance Matrix API
@@ -252,7 +318,7 @@
                 unitSystem: google.maps.UnitSystem.METRIC
             }, (response, status) => {
                 if (status !== 'OK') {
-                    alert('Error calculating distance: ' + status);
+                    alert('Error menghitung jarak: ' + status);
                     return;
                 }
                 
@@ -281,14 +347,14 @@
 
         // Format angka ke Rupiah
         function formatRupiah(amount) {
-            return 'Rp ' + amount.toLocaleString('id-ID');
+            return 'Rp' + amount.toLocaleString('id-ID');
         }
 
         // Event listener untuk tombol hitung
         document.getElementById('calculate-btn').addEventListener('click', function() {
             const pickup = document.getElementById('pickup').value;
             const destination = document.getElementById('destination').value;
-            const serviceType = document.getElementById('service-type').value;
+            const serviceType = document.querySelector('input[name="service-type"]:checked').value;
             const offerPrice = parseInt(document.getElementById('offer-price').value) || 0;
             
             if (!pickup || !destination) {
@@ -299,6 +365,10 @@
             calculateDistance(pickup, destination, function(distance) {
                 const fairPrice = calculateFairPrice(distance, serviceType);
                 const isLowOffer = offerPrice > 0 && offerPrice < fairPrice;
+                
+                // Update recommended price
+                document.getElementById('recommended-price').textContent = formatRupiah(fairPrice);
+                document.getElementById('auto-price').textContent = formatRupiah(fairPrice);
                 
                 // Tampilkan hasil
                 document.getElementById('distance').textContent = distance.toFixed(1) + ' km';
@@ -313,14 +383,19 @@
                     warningElement.style.display = 'none';
                 }
                 
-                // Tampilkan hasil
+                // Tampilkan hasil dan info lokasi
                 document.getElementById('result').style.display = 'block';
+                updateLocationInfo();
             });
         });
 
-        // Inisialisasi autocomplete saat halaman dimuat
+        // Inisialisasi saat halaman dimuat
         window.onload = function() {
             initAutocomplete();
+            
+            // Set default recommended price
+            document.getElementById('recommended-price').textContent = formatRupiah(28000);
+            document.getElementById('auto-price').textContent = formatRupiah(28000);
         };
     </script>
 </body>
