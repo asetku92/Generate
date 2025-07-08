@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login Jabber via Web</title>
+  <title>Jabber Client Dinamis</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/strophe.js/1.2.16/strophe.min.js"></script>
   <style>
     body {
@@ -51,6 +51,7 @@
       background-color: #f8f8f8;
       font-family: monospace;
       min-height: 200px;
+      white-space: pre-wrap;
     }
     .status {
       padding: 10px;
@@ -60,31 +61,60 @@
     .connected { background: #dff0d8; color: #3c763d; }
     .disconnected { background: #f2dede; color: #a94442; }
     .connecting { background: #fcf8e3; color: #8a6d3b; }
+    .config-section {
+      background: #f0f7ff;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h3>Login Jabber</h3>
-    <input id="jid" placeholder="JID (misal: kios@jabber.xmltronik.com)"><br>
-    <input id="pass" type="password" placeholder="Password"><br>
-    <button id="loginBtn" onclick="connect()">Login</button>
+    <h2>Jabber Client Dinamis</h2>
+    
+    <div class="config-section">
+      <h3>Konfigurasi Server</h3>
+      <input id="boshEndpoint" type="text" placeholder="BOSH Endpoint (contoh: https://jabber.example.com/http-bind)" value="https://st24.co.id/http-bind">
+    </div>
+    
+    <div class="config-section">
+      <h3>Login</h3>
+      <input id="jid" type="text" placeholder="JID Anda (contoh: user@domain.com)">
+      <input id="pass" type="password" placeholder="Password">
+      <button id="loginBtn" onclick="connect()">Login</button>
+    </div>
     
     <hr>
     
     <div id="status" class="status disconnected">Status: Tidak terhubung</div>
     
-    <textarea id="log" rows="10" readonly></textarea><br><br>
+    <textarea id="log" rows="10" readonly></textarea>
     
-    <input id="to" placeholder="Tujuan JID (misal: center@jabber.xmltronik.com)"><br>
-    <input id="msg" placeholder="Format perintah transaksi (misal: pulsa.0812xxx.10000.pin)"><br>
-    <button id="sendBtn" onclick="sendMsg()" disabled>Kirim Pesan</button>
+    <hr>
+    
+    <div class="config-section">
+      <h3>Kirim Pesan</h3>
+      <input id="targetJid" type="text" placeholder="JID Tujuan (contoh: penerima@domain.com)" value="xmltronikmantapu77@st24.co.id">
+      <input id="msg" placeholder="Isi pesan Anda">
+      <button id="sendBtn" onclick="sendMsg()" disabled>Kirim Pesan</button>
+    </div>
   </div>
 
   <script>
+    // Variabel global
     let conn = null;
     let isConnected = false;
 
-    // Fungsi untuk update UI berdasarkan status koneksi
+    // Fungsi untuk menampilkan log
+    function log(message) {
+      const timestamp = new Date().toLocaleTimeString();
+      const logElement = document.getElementById("log");
+      logElement.value += `[${timestamp}] ${message}\n`;
+      logElement.scrollTop = logElement.scrollHeight;
+    }
+
+    // Fungsi untuk update tampilan UI
     function updateUI() {
       const loginBtn = document.getElementById('loginBtn');
       const sendBtn = document.getElementById('sendBtn');
@@ -105,17 +135,12 @@
       }
     }
 
-    function log(message) {
-      const timestamp = new Date().toLocaleTimeString();
-      const logElement = document.getElementById("log");
-      logElement.value += `[${timestamp}] ${message}\n`;
-      logElement.scrollTop = logElement.scrollHeight;
-    }
-
+    // Fungsi untuk koneksi ke server Jabber
     function connect() {
+      // Jika sudah terhubung, lakukan disconnect
       if (isConnected) {
         conn.disconnect();
-        log("ℹ️ Memutuskan koneksi...");
+        log("Memutuskan koneksi...");
         isConnected = false;
         updateUI();
         return;
@@ -123,32 +148,38 @@
 
       const jid = document.getElementById("jid").value.trim();
       const pass = document.getElementById("pass").value.trim();
+      const boshEndpoint = document.getElementById("boshEndpoint").value.trim();
 
-      if (!jid || !pass) {
-        log("❌ Harap isi JID dan password");
+      // Validasi input
+      if (!jid || !pass || !boshEndpoint) {
+        log("Error: JID, password, dan BOSH endpoint harus diisi");
         return;
       }
 
-      conn = new Strophe.Connection("https://jabber.xmltronik.com/http-bind");
+      // Buat koneksi baru
+      conn = new Strophe.Connection(boshEndpoint, {
+        withCredentials: false
+      });
       
-      // Update UI untuk status connecting
+      // Update status UI
       document.getElementById('status').textContent = 'Status: Menghubungkan...';
       document.getElementById('status').className = 'status connecting';
       
-      log("⏳ Menghubungkan ke server...");
+      log(`Menghubungkan ke ${jid} via ${boshEndpoint}...`);
       
-      conn.connect(jid, pass, function (status) {
+      // Hubungkan ke server
+      conn.connect(jid, pass, function(status) {
         if (status === Strophe.Status.CONNECTED) {
           isConnected = true;
-          log("✅ Login berhasil");
+          log("✅ Berhasil terhubung ke server Jabber");
           conn.addHandler(onMessage, null, "message", null, null, null);
-          conn.send($pres().tree());
+          conn.send($pres().tree()); // Kirim presence
         } else if (status === Strophe.Status.DISCONNECTED) {
           isConnected = false;
           log("❌ Terputus dari server");
         } else if (status === Strophe.Status.AUTHFAIL) {
           isConnected = false;
-          log("❌ Login gagal (cek JID & password)");
+          log("❌ Autentikasi gagal (JID/password salah)");
         } else if (status === Strophe.Status.CONNFAIL) {
           isConnected = false;
           log("❌ Gagal terhubung ke server");
@@ -160,42 +191,48 @@
       });
     }
 
+    // Fungsi untuk mengirim pesan
     function sendMsg() {
       if (!isConnected) {
-        log("❌ Silakan login terlebih dahulu");
+        log("Error: Silakan login terlebih dahulu");
         return;
       }
 
-      const to = document.getElementById("to").value.trim();
+      const targetJid = document.getElementById("targetJid").value.trim();
       const msg = document.getElementById("msg").value.trim();
 
-      if (!to || !msg) {
-        log("❌ Harap isi JID tujuan dan pesan");
+      if (!targetJid || !msg) {
+        log("Error: JID tujuan dan pesan harus diisi");
         return;
       }
 
       try {
-        const message = $msg({to: to, type: 'chat'}).c("body").t(msg);
+        const message = $msg({to: targetJid, type: 'chat'}).c("body").t(msg);
         conn.send(message);
-        log(`📤 Terkirim ke ${to}: ${msg}`);
+        log(`📤 Mengirim ke ${targetJid}: ${msg}`);
         document.getElementById("msg").value = "";
       } catch (error) {
         log(`❌ Gagal mengirim pesan: ${error}`);
       }
     }
 
+    // Handler untuk menerima pesan
     function onMessage(msg) {
       const from = msg.getAttribute("from");
       const body = msg.getElementsByTagName("body")[0];
       if (body) {
         const msgText = Strophe.getText(body);
-        log(`📥 Balasan dari ${from}: ${msgText}`);
+        log(`📥 Pesan dari ${from}: ${msgText}`);
       }
       return true;
     }
 
-    // Inisialisasi UI
+    // Inisialisasi UI saat pertama kali load
     updateUI();
+    
+    // Info awal
+    log("🔵 Aplikasi Jabber Client siap digunakan");
+    log("🔵 Silakan isi konfigurasi server dan login");
   </script>
 </body>
 </html>
