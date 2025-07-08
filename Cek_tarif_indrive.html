@@ -3,393 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Tarif inDrive</title>
+    <title>Kalkulator Tarif Motor inDrive</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEsbn9W4ivUesB15wmDuMhOT4JR6Mq9Bs&libraries=places"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEsbn9W4ivUesB15wmDuMhOT4JR6Mq9Bs&libraries=places,directions"></script>
     <style>
         :root {
             --primary: #FF6B00;
             --secondary: #FF9500;
-            --accent: #FF3D00;
             --background: #f5f5f5;
-            --text: #333333;
-            --card-bg: #ffffff;
-            --warning: #FF3D00;
+            --text: #333;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: var(--background);
+            background: var(--background);
             color: var(--text);
-            min-height: 100vh;
             padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
-
         .container {
-            width: 100%;
-            max-width: 500px;
-            background: var(--card-bg);
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
             border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
-
         h1 {
+            color: var(--primary);
             text-align: center;
             margin-bottom: 20px;
-            color: var(--primary);
-            font-weight: 600;
-            font-size: 24px;
         }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: 500;
-            margin: 15px 0 10px;
-            color: var(--primary);
-        }
-
         .form-group {
             margin-bottom: 15px;
         }
-
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             font-weight: 500;
-            color: #555;
         }
-
         input, select {
             width: 100%;
-            padding: 12px 15px;
-            border-radius: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
-            background: #fff;
-            color: var(--text);
-            font-family: 'Poppins', sans-serif;
-            font-size: 16px;
-            transition: all 0.3s ease;
+            border-radius: 8px;
+            font-family: 'Poppins';
         }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(255, 107, 0, 0.2);
-        }
-
         .btn {
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            background: linear-gradient(to right, var(--primary), var(--secondary));
             color: white;
             border: none;
-            padding: 14px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 500;
-            width: 100%;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-        }
-
-        .btn:hover {
-            opacity: 0.9;
-        }
-
-        .result {
-            margin-top: 25px;
-            padding: 20px;
-            border-radius: 10px;
-            background: #fff;
-            border: 1px solid #eee;
-            display: none;
-        }
-
-        .result-item {
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .result-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-
-        .result-label {
-            font-weight: 500;
-            color: #666;
-        }
-
-        .result-value {
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        .warning {
-            color: var(--warning);
-            font-weight: 500;
-            margin-top: 15px;
-            text-align: center;
-            display: none;
-            padding: 10px;
-            background: rgba(255, 61, 0, 0.1);
+            padding: 12px;
             border-radius: 8px;
-        }
-
-        .recommended-price {
-            text-align: center;
-            font-size: 24px;
+            width: 100%;
             font-weight: 600;
-            color: var(--primary);
-            margin: 15px 0;
+            margin-top: 10px;
+            cursor: pointer;
         }
-
-        .price-input {
-            position: relative;
-        }
-
-        .price-input:before {
-            content: "Rp";
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #666;
-            font-weight: 500;
-        }
-
-        .price-input input {
-            padding-left: 40px;
-        }
-
-        .location-info {
-            margin-top: 15px;
+        .result {
+            margin-top: 20px;
             padding: 15px;
             background: #f9f9f9;
             border-radius: 10px;
-            font-size: 14px;
+            display: none;
         }
-
-        .location-info p {
-            margin-bottom: 5px;
+        .warning {
+            color: #FF3D00;
+            font-weight: 500;
+            margin-top: 10px;
         }
-
-        .location-info strong {
-            color: var(--primary);
+        #map {
+            height: 300px;
+            width: 100%;
+            margin-top: 20px;
+            border-radius: 10px;
+            border: 1px solid #eee;
         }
-
-        .service-option {
-            display: flex;
-            align-items: center;
+        .route-options {
+            margin-top: 15px;
+        }
+        .route-option {
+            padding: 10px;
             margin-bottom: 10px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            cursor: pointer;
         }
-
-        .service-option input {
-            width: auto;
-            margin-right: 10px;
-        }
-
-        .service-option label {
-            margin-bottom: 0;
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 15px;
-            }
-            
-            h1 {
-                font-size: 20px;
-            }
+        .route-option.active {
+            background: #e1f5fe;
+            border-left: 4px solid var(--primary);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Tawarkan Ongkos Anda</h1>
-        <p style="text-align: center; margin-bottom: 20px; color: #666;">Anda dapat mengubah ongkos yang direkomendasikan</p>
+        <h1>Kalkulator Tarif Motor inDrive</h1>
         
         <div class="form-group">
-            <div class="section-title">Jenis Layanan</div>
-            <div class="service-option">
-                <input type="radio" id="passenger" name="service-type" value="passenger" checked>
-                <label for="passenger">Penumpang (Rp2.325/km, min. Rp11.000)</label>
-            </div>
-            <div class="service-option">
-                <input type="radio" id="courier" name="service-type" value="courier">
-                <label for="courier">Kurir (Rp2.000/km, min. Rp10.000)</label>
-            </div>
-        </div>
-        
-        <div class="form-group">
-            <label for="offer-price">Tawaran Harga (Minimal 10% dari tarif wajar)</label>
-            <div class="price-input">
-                <input type="number" id="offer-price" placeholder="Masukkan tawaran harga Anda">
-            </div>
-        </div>
-        
-        <div class="form-group">
-            <div class="section-title">Lokasi</div>
-            <label for="pickup">Penjemputan</label>
+            <label for="pickup">Lokasi Penjemputan</label>
             <input type="text" id="pickup" placeholder="Masukkan lokasi penjemputan">
-            
-            <label for="destination" style="margin-top: 10px;">Tujuan</label>
+        </div>
+        
+        <div class="form-group">
+            <label for="destination">Lokasi Tujuan</label>
             <input type="text" id="destination" placeholder="Masukkan lokasi tujuan">
         </div>
         
-        <button class="btn" id="calculate-btn">Hitung Estimasi</button>
-        
-        <div class="result" id="result">
-            <div class="section-title">Hasil Perhitungan</div>
-            <div class="result-item">
-                <span class="result-label">Jarak Tempuh:</span>
-                <span class="result-value" id="distance">-</span>
-            </div>
-            <div class="result-item">
-                <span class="result-label">Harga per km:</span>
-                <span class="result-value" id="per-km">-</span>
-            </div>
-            <div class="result-item">
-                <span class="result-label">Estimasi Tarif Wajar:</span>
-                <span class="result-value" id="fair-price">-</span>
-            </div>
-            <div class="result-item">
-                <span class="result-label">Tawaran Minimal (10%):</span>
-                <span class="result-value" id="min-offer">-</span>
-            </div>
-            <div class="result-item">
-                <span class="result-label">Harga Tawaran Anda:</span>
-                <span class="result-value" id="user-offer">-</span>
-            </div>
-            <div class="warning" id="warning">
-                Tawaran Anda terlalu rendah dari minimal 10% tarif wajar!
-            </div>
+        <div class="form-group">
+            <label for="offer-price">Tawaran Harga (Rp)</label>
+            <input type="number" id="offer-price" placeholder="Masukkan tawaran Anda">
         </div>
         
-        <div class="recommended-price" id="recommended-price" style="display: none;">
-            Tarif yang direkomendasikan: <span id="rec-price">-</span>
+        <button class="btn" id="calculate-btn">Hitung Tarif Motor</button>
+        
+        <div class="route-options" id="route-options" style="display: none;">
+            <h3>Pilih Rute Motor:</h3>
+            <!-- Opsi rute akan muncul di sini -->
+        </div>
+        
+        <div id="map"></div>
+        
+        <div class="result" id="result">
+            <h3>Hasil Perhitungan</h3>
+            <div id="distance"></div>
+            <div id="fair-price"></div>
+            <div id="user-offer"></div>
+            <div class="warning" id="warning"></div>
         </div>
     </div>
 
     <script>
-        // Inisialisasi autocomplete untuk input lokasi
-        function initAutocomplete() {
-            const pickupInput = document.getElementById('pickup');
-            const destinationInput = document.getElementById('destination');
-            
-            const pickupAutocomplete = new google.maps.places.Autocomplete(pickupInput);
-            const destinationAutocomplete = new google.maps.places.Autocomplete(destinationInput);
-        }
-
-        // Hitung jarak menggunakan Distance Matrix API
-        function calculateDistance(origin, destination, callback) {
-            const service = new google.maps.DistanceMatrixService();
-            
-            service.getDistanceMatrix({
-                origins: [origin],
-                destinations: [destination],
-                travelMode: 'DRIVING',
-                unitSystem: google.maps.UnitSystem.METRIC
-            }, (response, status) => {
-                if (status !== 'OK') {
-                    alert('Error menghitung jarak: ' + status);
-                    return;
-                }
-                
-                const distance = response.rows[0].elements[0].distance.value / 1000; // Convert to km
-                callback(distance);
+        let map;
+        let directionsService;
+        let directionsRenderer;
+        let selectedRouteIndex = 0;
+        
+        function initMap() {
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 13,
+                center: { lat: 1.4748, lng: 124.8426 }, // Default: Manado
             });
-        }
-
-        // Pembulatan ke kelipatan 500
-        function roundTo500(amount) {
-            return Math.ceil(amount / 500) * 500;
-        }
-
-        // Hitung estimasi tarif berdasarkan aturan baru
-        function calculateFairPrice(distance, serviceType) {
-            let pricePerKm, minPrice;
             
-            if (serviceType === 'passenger') {
-                pricePerKm = 2325;
-                minPrice = 11000;
-            } else {
-                pricePerKm = 2000;
-                minPrice = 10000;
-            }
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                suppressMarkers: false,
+                polylineOptions: {
+                    strokeColor: "#FF6B00",
+                    strokeWeight: 5
+                }
+            });
             
-            const calculatedPrice = distance * pricePerKm;
-            const roundedPrice = roundTo500(calculatedPrice);
+            initAutocomplete();
+        }
+        
+        function initAutocomplete() {
+            const pickupInput = document.getElementById("pickup");
+            const destinationInput = document.getElementById("destination");
             
-            return Math.max(roundedPrice, minPrice);
+            new google.maps.places.Autocomplete(pickupInput);
+            new google.maps.places.Autocomplete(destinationInput);
         }
-
-        // Format angka ke Rupiah
-        function formatRupiah(amount) {
-            return 'Rp' + amount.toLocaleString('id-ID');
-        }
-
-        // Event listener untuk tombol hitung
-        document.getElementById('calculate-btn').addEventListener('click', function() {
-            const pickup = document.getElementById('pickup').value;
-            const destination = document.getElementById('destination').value;
-            const serviceType = document.querySelector('input[name="service-type"]:checked').value;
-            const offerPrice = parseInt(document.getElementById('offer-price').value) || 0;
+        
+        function calculateRoute() {
+            const pickup = document.getElementById("pickup").value;
+            const destination = document.getElementById("destination").value;
             
             if (!pickup || !destination) {
-                alert('Harap masukkan lokasi penjemputan dan tujuan');
+                alert("Harap masukkan lokasi penjemputan dan tujuan");
                 return;
             }
             
-            calculateDistance(pickup, destination, function(distance) {
-                const fairPrice = calculateFairPrice(distance, serviceType);
-                const minOffer = Math.ceil(fairPrice * 0.1 / 500) * 500; // Minimal 10% dibulatkan 500
-                const isLowOffer = offerPrice > 0 && offerPrice < minOffer;
-                
-                // Tampilkan harga per km
-                const pricePerKm = serviceType === 'passenger' ? 2325 : 2000;
-                document.getElementById('per-km').textContent = formatRupiah(pricePerKm) + '/km';
-                
-                // Tampilkan hasil
-                document.getElementById('distance').textContent = distance.toFixed(1) + ' km';
-                document.getElementById('fair-price').textContent = formatRupiah(fairPrice);
-                document.getElementById('min-offer').textContent = formatRupiah(minOffer);
-                document.getElementById('user-offer').textContent = offerPrice > 0 ? formatRupiah(offerPrice) : '-';
-                
-                // Tampilkan harga rekomendasi
-                document.getElementById('rec-price').textContent = formatRupiah(fairPrice);
-                document.getElementById('recommended-price').style.display = 'block';
-                
-                // Tampilkan peringatan jika tawaran terlalu rendah
-                const warningElement = document.getElementById('warning');
-                if (isLowOffer) {
-                    warningElement.style.display = 'block';
+            const request = {
+                origin: pickup,
+                destination: destination,
+                travelMode: "DRIVING",
+                provideRouteAlternatives: true,
+                avoidTolls: true,
+                unitSystem: google.maps.UnitSystem.METRIC
+            };
+            
+            directionsService.route(request, (response, status) => {
+                if (status === "OK") {
+                    directionsRenderer.setDirections(response);
+                    
+                    // Tampilkan opsi rute alternatif
+                    showRouteOptions(response.routes);
+                    
+                    // Hitung tarif berdasarkan rute pertama
+                    calculateMotorFare(response.routes[0].legs[0].distance.value / 1000);
                 } else {
-                    warningElement.style.display = 'none';
+                    alert("Gagal menghitung rute: " + status);
                 }
-                
-                // Tampilkan hasil
-                document.getElementById('result').style.display = 'block';
             });
-        });
-
-        // Inisialisasi saat halaman dimuat
-        window.onload = function() {
-            initAutocomplete();
-        };
+        }
+        
+        function showRouteOptions(routes) {
+            const routeOptionsDiv = document.getElementById("route-options");
+            routeOptionsDiv.innerHTML = "<h3>Pilih Rute Motor:</h3>";
+            routeOptionsDiv.style.display = "block";
+            
+            routes.forEach((route, index) => {
+                const distance = (route.legs[0].distance.value / 1000).toFixed(1);
+                const duration = route.legs[0].duration.text;
+                
+                const routeDiv = document.createElement("div");
+                routeDiv.className = "route-option" + (index === 0 ? " active" : "");
+                routeDiv.innerHTML = `
+                    <strong>Rute ${index + 1}</strong><br>
+                    Jarak: ${distance} km | Waktu: ${duration}
+                `;
+                
+                routeDiv.onclick = () => {
+                    document.querySelectorAll(".route-option").forEach(el => el.classList.remove("active"));
+                    routeDiv.classList.add("active");
+                    directionsRenderer.setRouteIndex(index);
+                    selectedRouteIndex = index;
+                    calculateMotorFare(distance);
+                };
+                
+                routeOptionsDiv.appendChild(routeDiv);
+            });
+        }
+        
+        function calculateMotorFare(distance) {
+            const pricePerKm = 2325;
+            const minPrice = 11000;
+            
+            // Hitung tarif dasar
+            let calculatedPrice = distance * pricePerKm;
+            
+            // Bulatkan ke kelipatan 500
+            let roundedPrice = Math.round(calculatedPrice / 500) * 500;
+            
+            // Pastikan tidak di bawah minimum
+            const fairPrice = Math.max(roundedPrice, minPrice);
+            
+            // Tampilkan hasil
+            document.getElementById("distance").innerHTML = `
+                <strong>Jarak Tempuh:</strong> ${distance.toFixed(1)} km
+            `;
+            
+            document.getElementById("fair-price").innerHTML = `
+                <strong>Estimasi Tarif Wajar:</strong> Rp${fairPrice.toLocaleString("id-ID")}
+            `;
+            
+            const offerPrice = parseInt(document.getElementById("offer-price").value) || 0;
+            document.getElementById("user-offer").innerHTML = `
+                <strong>Harga Tawaran Anda:</strong> ${offerPrice > 0 ? "Rp" + offerPrice.toLocaleString("id-ID") : "-"}
+            `;
+            
+            // Validasi tawaran
+            const warningElement = document.getElementById("warning");
+            if (offerPrice > 0 && offerPrice < (fairPrice * 0.9)) {
+                warningElement.textContent = "Tawaran Anda terlalu rendah (minimal 90% dari tarif wajar)";
+                warningElement.style.display = "block";
+            } else {
+                warningElement.style.display = "none";
+            }
+            
+            document.getElementById("result").style.display = "block";
+        }
+        
+        document.getElementById("calculate-btn").addEventListener("click", calculateRoute);
+        
+        // Inisialisasi peta saat halaman dimuat
+        window.onload = initMap;
     </script>
 </body>
 </html>
