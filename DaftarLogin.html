@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Daftar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #ff6b6b, #9c27b0, #2196f3);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .container {
+            display: flex;
+            width: 100%;
+            max-width: 800px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .form-container {
+            padding: 40px;
+            width: 100%;
+        }
+        
+        h2 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            border-color: #9c27b0;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.2);
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(to right, #ff6b6b, #9c27b0);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .switch-text {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+        
+        .switch-text a {
+            color: #9c27b0;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .switch-text a:hover {
+            text-decoration: underline;
+        }
+        
+        .status-message {
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .phone-input {
+            display: flex;
+            align-items: center;
+        }
+        
+        .phone-prefix {
+            padding: 12px;
+            background: #f1f1f1;
+            border: 2px solid #ddd;
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+            font-size: 14px;
+        }
+        
+        .phone-number {
+            flex: 1;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .pin-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .pin-input {
+            width: 100%;
+            text-align: center;
+            font-size: 18px;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Form Login -->
+        <div class="form-container" id="login-container">
+            <h2>Login dengan Nomor HP</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-phone">Nomor HP</label>
+                    <div class="phone-input">
+                        <span class="phone-prefix">+62</span>
+                        <input type="tel" id="login-phone" class="phone-number" placeholder="8xx xxxx xxxx" pattern="[0-9]{9,13}" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="login-pin">PIN (6 digit)</label>
+                    <div class="pin-container">
+                        <input type="password" id="login-pin" class="pin-input" maxlength="6" pattern="[0-9]{6}" placeholder="••••••" required>
+                    </div>
+                </div>
+                <button type="submit">Masuk</button>
+                <div id="login-status" class="status-message"></div>
+                <p class="switch-text">Belum punya akun? <a href="#" id="show-register">Daftar disini</a></p>
+            </form>
+        </div>
+        
+        <!-- Form Daftar (Awalnya tersembunyi) -->
+        <div class="form-container" id="register-container" style="display:none;">
+            <h2>Pendaftaran Akun Baru</h2>
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="register-name">Nama Lengkap</label>
+                    <input type="text" id="register-name" placeholder="Masukkan nama lengkap" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-address">Alamat</label>
+                    <textarea id="register-address" rows="3" placeholder="Masukkan alamat lengkap" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="register-phone">Nomor HP</label>
+                    <div class="phone-input">
+                        <span class="phone-prefix">+62</span>
+                        <input type="tel" id="register-phone" class="phone-number" placeholder="8xx xxxx xxxx" pattern="[0-9]{9,13}" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="register-pin">Buat PIN (6 digit angka)</label>
+                    <div class="pin-container">
+                        <input type="password" id="register-pin" class="pin-input" maxlength="6" pattern="[0-9]{6}" placeholder="••••••" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="register-confirm-pin">Konfirmasi PIN</label>
+                    <div class="pin-container">
+                        <input type="password" id="register-confirm-pin" class="pin-input" maxlength="6" pattern="[0-9]{6}" placeholder="••••••" required>
+                    </div>
+                </div>
+                <button type="submit">Daftar</button>
+                <div id="register-status" class="status-message"></div>
+                <p class="switch-text">Sudah punya akun? <a href="#" id="show-login">Masuk disini</a></p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Fungsi untuk toggle antara form login dan register
+        document.getElementById('show-register').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('register-container').style.display = 'block';
+        });
+        
+        document.getElementById('show-login').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('register-container').style.display = 'none';
+            document.getElementById('login-container').style.display = 'block';
+        });
+        
+        // Fungsi untuk mengirim data ke App Inventor Web
+        function sendToAppInventor(data, endpoint) {
+            // Ganti URL berikut dengan URL Web Anda dari App Inventor
+            const webUrl = 'https://your-app-inventor-web-url.com/your-endpoint';
+            
+            fetch(webUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                const statusElement = endpoint === 'login' ? 
+                    document.getElementById('login-status') : 
+                    document.getElementById('register-status');
+                
+                statusElement.textContent = endpoint === 'login' ? 
+                    'Login berhasil! Mengarahkan...' : 
+                    'Pendaftaran berhasil! Silakan login.';
+                statusElement.className = 'status-message success';
+                statusElement.style.display = 'block';
+                
+                if(endpoint === 'login') {
+                    // Redirect atau tindakan setelah login sukses
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 2000);
+                } else {
+                    // Kembali ke form login setelah pendaftaran
+                    setTimeout(() => {
+                        document.getElementById('register-container').style.display = 'none';
+                        document.getElementById('login-container').style.display = 'block';
+                        document.getElementById('register-form').reset();
+                    }, 2000);
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                const statusElement = endpoint === 'login' ? 
+                    document.getElementById('login-status') : 
+                    document.getElementById('register-status');
+                
+                statusElement.textContent = 'Terjadi kesalahan. Silakan coba lagi.';
+                statusElement.className = 'status-message error';
+                statusElement.style.display = 'block';
+            });
+        }
+        
+        // Handle form login
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const phone = '+62' + document.getElementById('login-phone').value;
+            const pin = document.getElementById('login-pin').value;
+            
+            // Validasi PIN
+            if(pin.length !== 6 || !/^\d+$/.test(pin)) {
+                const statusElement = document.getElementById('login-status');
+                statusElement.textContent = 'PIN harus 6 digit angka';
+                statusElement.className = 'status-message error';
+                statusElement.style.display = 'block';
+                return;
+            }
+            
+            const loginData = {
+                action: 'login',
+                phone: phone,
+                pin: pin
+            };
+            
+            sendToAppInventor(loginData, 'login');
+        });
+        
+        // Handle form register
+        document.getElementById('register-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('register-name').value;
+            const address = document.getElementById('register-address').value;
+            const phone = '+62' + document.getElementById('register-phone').value;
+            const pin = document.getElementById('register-pin').value;
+            const confirmPin = document.getElementById('register-confirm-pin').value;
+            
+            // Validasi PIN
+            if(pin.length !== 6 || !/^\d+$/.test(pin)) {
+                const statusElement = document.getElementById('register-status');
+                statusElement.textContent = 'PIN harus 6 digit angka';
+                statusElement.className = 'status-message error';
+                statusElement.style.display = 'block';
+                return;
+            }
+            
+            // Validasi konfirmasi PIN
+            if(pin !== confirmPin) {
+                const statusElement = document.getElementById('register-status');
+                statusElement.textContent = 'PIN dan Konfirmasi PIN tidak cocok';
+                statusElement.className = 'status-message error';
+                statusElement.style.display = 'block';
+                return;
+            }
+            
+            const registerData = {
+                action: 'register',
+                name: name,
+                address: address,
+                phone: phone,
+                pin: pin
+            };
+            
+            sendToAppInventor(registerData, 'register');
+        });
+        
+        // Format input nomor HP
+        document.getElementById('login-phone').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '');
+        });
+        
+        document.getElementById('register-phone').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '');
+        });
+        
+        // Format input PIN
+        document.getElementById('login-pin').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '').slice(0, 6);
+        });
+        
+        document.getElementById('register-pin').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '').slice(0, 6);
+        });
+        
+        document.getElementById('register-confirm-pin').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '').slice(0, 6);
+        });
+    </script>
+</body>
+</html>
