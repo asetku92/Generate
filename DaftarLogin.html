@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login & Daftar</title>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -17,8 +14,6 @@
         
         body {
             background: linear-gradient(135deg, #ff6b6b, #9c27b0, #2196f3);
-            background-size: 400% 400%;
-            animation: gradient 15s ease infinite;
             height: 100vh;
             display: flex;
             justify-content: center;
@@ -26,356 +21,220 @@
             padding: 20px;
         }
         
-        @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
-        .app-header {
-            text-align: center;
-            margin-bottom: 20px;
-            color: white;
-            position: absolute;
-            top: 20px;
-            width: 100%;
-            padding: 0 20px;
-        }
-        
-        .app-name {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 5px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .app-tagline {
-            font-size: 16px;
-            font-weight: 400;
-            opacity: 0.9;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-        }
-        
         .container {
-            display: flex;
-            width: 100%;
-            max-width: 800px;
             background-color: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-            margin-top: 80px;
-        }
-        
-        .form-container {
-            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             width: 100%;
+            max-width: 400px;
+            padding: 30px;
         }
         
         h2 {
-            color: #333;
-            margin-bottom: 30px;
             text-align: center;
-            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
         }
         
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             color: #555;
-            font-weight: 500;
         }
         
-        input, textarea {
+        input {
             width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-        
-        input:focus, textarea:focus {
-            border-color: #9c27b0;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.2);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
         
         button {
             width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            background: linear-gradient(to right, #ff6b6b, #9c27b0);
+            padding: 10px;
+            background-color: #4CAF50;
             color: white;
-            font-size: 16px;
-            font-weight: 600;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
-            transition: all 0.3s;
             margin-top: 10px;
         }
         
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .switch-text {
+        .switch {
             text-align: center;
-            margin-top: 20px;
-            color: #666;
+            margin-top: 15px;
         }
         
-        .switch-text a {
-            color: #9c27b0;
+        .switch a {
+            color: #2196F3;
             text-decoration: none;
-            font-weight: 500;
         }
         
-        .switch-text a:hover {
-            text-decoration: underline;
-        }
-        
-        .status-message {
-            text-align: center;
+        .status {
             margin-top: 15px;
             padding: 10px;
             border-radius: 5px;
             display: none;
         }
         
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
         .error {
             background-color: #f8d7da;
             color: #721c24;
         }
-        
-        .phone-input {
-            display: flex;
-            align-items: center;
-        }
-        
-        .phone-prefix {
-            padding: 12px;
-            background: #f1f1f1;
-            border: 2px solid #ddd;
-            border-right: none;
-            border-radius: 8px 0 0 8px;
-            font-size: 14px;
-        }
-        
-        .phone-number {
-            flex: 1;
-            border-radius: 0 8px 8px 0;
-        }
-        
-        .pin-container {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .pin-input {
-            width: 100%;
-            text-align: center;
-            font-size: 18px;
-            letter-spacing: 2px;
-        }
     </style>
 </head>
 <body>
-    <div class="app-header">
-        <div class="app-name" id="app-name">Loading...</div>
-        <div class="app-tagline" id="app-tagline"></div>
+    <div class="container" id="login-container">
+        <h2>Login</h2>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="login-phone">Nomor HP</label>
+                <input type="text" id="login-phone" placeholder="628xxxx" required>
+            </div>
+            <div class="form-group">
+                <label for="login-pin">PIN</label>
+                <input type="password" id="login-pin" placeholder="6 digit PIN" required maxlength="6">
+            </div>
+            <button type="submit">Login</button>
+            <div class="switch">
+                Belum punya akun? <a href="#" id="show-register">Daftar disini</a>
+            </div>
+            <div id="login-status" class="status"></div>
+        </form>
     </div>
     
-    <div class="container">
-        <!-- Form Login -->
-        <div class="form-container" id="login-container">
-            <h2>Login</h2>
-            <form id="login-form">
-                <div class="form-group">
-                    <label for="login-phone">Nomor HP</label>
-                    <div class="phone-input">
-                        <span class="phone-prefix">62</span>
-                        <input type="tel" id="login-phone" class="phone-number" placeholder="8123456789" pattern="[0-9]{9,13}" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="login-pin">PIN (6 digit)</label>
-                    <div class="pin-container">
-                        <input type="password" id="login-pin" class="pin-input" maxlength="6" pattern="[0-9]{6}" placeholder="••••••" required>
-                    </div>
-                </div>
-                <button type="submit">Masuk</button>
-                <div id="login-status" class="status-message"></div>
-                <p class="switch-text">Belum punya akun? <a href="#" id="show-register">Daftar disini</a></p>
-            </form>
-        </div>
-        
-        <!-- Form Daftar (Awalnya tersembunyi) -->
-        <div class="form-container" id="register-container" style="display:none;">
-            <h2>Pendaftaran</h2>
-            <form id="register-form">
-                <div class="form-group">
-                    <label for="register-name">Nama Outlet</label>
-                    <input type="text" id="register-name" placeholder="Masukkan nama outlet" required>
-                </div>
-                <div class="form-group">
-                    <label for="register-address">Alamat Outlet</label>
-                    <textarea id="register-address" rows="3" placeholder="Masukkan alamat lengkap" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="register-phone">Nomor HP</label>
-                    <div class="phone-input">
-                        <span class="phone-prefix">62</span>
-                        <input type="tel" id="register-phone" class="phone-number" placeholder="8123456789" pattern="[0-9]{9,13}" required>
-                    </div>
-                </div>
-                <button type="submit">Daftar</button>
-                <div id="register-status" class="status-message"></div>
-                <p class="switch-text">Sudah punya akun? <a href="#" id="show-login">Masuk disini</a></p>
-            </form>
-        </div>
+    <div class="container" id="register-container" style="display:none;">
+        <h2>Daftar</h2>
+        <form id="register-form">
+            <div class="form-group">
+                <label for="register-name">Nama Outlet</label>
+                <input type="text" id="register-name" required>
+            </div>
+            <div class="form-group">
+                <label for="register-phone">Nomor HP</label>
+                <input type="text" id="register-phone" placeholder="628xxxx" required>
+            </div>
+            <div class="form-group">
+                <label for="register-address">Alamat</label>
+                <input type="text" id="register-address" required>
+            </div>
+            <button type="submit">Daftar</button>
+            <div class="switch">
+                Sudah punya akun? <a href="#" id="show-login">Login disini</a>
+            </div>
+            <div id="register-status" class="status"></div>
+        </form>
     </div>
 
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBf3jpW54TnCaCunzezuOQsSiwEREwnPg0",
-            authDomain: "chatting-87e87.firebaseapp.com",
-            databaseURL: "https://chatting-87e87-default-rtdb.firebaseio.com",
-            projectId: "chatting-87e87",
-            storageBucket: "chatting-87e87.firebasestorage.app",
-            messagingSenderId: "240910634931",
-            appId: "1:240910634931:web:49aa4b9a0659d9115045c6",
-            measurementId: "G-10MWDS0DMK"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-
-        // Load data from Firebase
-        function loadFirebaseData() {
-            const appRef = database.ref('DataApkAsiaPayment');
-            
-            appRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                
-                // Update app name and tagline
-                document.getElementById('app-name').textContent = data.nama_aplikasi || 'Aplikasi Saya';
-                document.getElementById('app-tagline').textContent = data.Tagline || '';
-                
-                // Update background gradient
-                if (data.Bg1 && data.Bg2 && data.Bg3) {
-                    document.body.style.background = 
-                        `linear-gradient(135deg, ${data.Bg1}, ${data.Bg2}, ${data.Bg3})`;
-                }
-            }, (error) => {
-                console.error("Error loading Firebase data:", error);
-            });
-        }
-
-        // Fungsi untuk toggle antara form login dan register
+        // Fungsi toggle form
         document.getElementById('show-register').addEventListener('click', function(e) {
             e.preventDefault();
             document.getElementById('login-container').style.display = 'none';
             document.getElementById('register-container').style.display = 'block';
-            clearStatusMessages();
         });
         
         document.getElementById('show-login').addEventListener('click', function(e) {
             e.preventDefault();
             document.getElementById('register-container').style.display = 'none';
             document.getElementById('login-container').style.display = 'block';
-            clearStatusMessages();
         });
         
-        function clearStatusMessages() {
-            document.getElementById('login-status').style.display = 'none';
-            document.getElementById('register-status').style.display = 'none';
-        }
-        
-        // Fungsi untuk mengirim data ke App Inventor WebViewString
-        function sendToAppInventor(data) {
+        // Fungsi kirim response ke Kodular
+        function sendToAppInventor(response) {
             try {
-                // Validasi nomor HP
-                const phone = data.phone;
-                if (!phone.startsWith('628') || phone.length < 10 || phone.length > 15) {
-                    showError(data.action, 'Nomor HP harus dimulai dengan 628 dan 10-15 digit');
-                    return false;
-                }
-                
-                // Kirim data ke WebViewString
-                window.AppInventor.setWebViewString(JSON.stringify(data));
+                window.AppInventor.setWebViewString(JSON.stringify(response));
                 return true;
             } catch (error) {
-                console.error('Error:', error);
-                showError(data.action, 'Gagal mengirim data. Pastikan aplikasi terbuka.');
+                console.error("Gagal mengirim ke WebViewString:", error);
                 return false;
             }
-        }
-        
-        function showError(formType, message) {
-            const statusElement = formType === 'login' ? 
-                document.getElementById('login-status') : 
-                document.getElementById('register-status');
-            
-            statusElement.textContent = message;
-            statusElement.className = 'status-message error';
-            statusElement.style.display = 'block';
         }
         
         // Handle form login
         document.getElementById('login-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            clearStatusMessages();
             
-            const phone = '62' + document.getElementById('login-phone').value;
+            const phone = document.getElementById('login-phone').value;
             const pin = document.getElementById('login-pin').value;
             
-            // Validasi PIN
-            if(pin.length !== 6 || !/^\d+$/.test(pin)) {
-                showError('login', 'PIN harus 6 digit angka');
+            // Validasi sederhana
+            if (!phone.startsWith('628') || phone.length < 10) {
+                showStatus('login', 'Nomor HP harus mulai dengan 628 dan minimal 10 digit', 'error');
                 return;
             }
             
-            const loginData = {
+            if (pin.length !== 6 || !/^\d+$/.test(pin)) {
+                showStatus('login', 'PIN harus 6 digit angka', 'error');
+                return;
+            }
+            
+            // Kirim response ke Kodular
+            const response = {
                 action: 'login',
+                status: 'success',
                 phone: phone,
-                pin: pin
+                timestamp: new Date().toISOString()
             };
             
-            if (sendToAppInventor(loginData)) {
+            if (sendToAppInventor(response)) {
+                showStatus('login', 'Login berhasil, memproses...', 'success');
                 document.getElementById('login-form').reset();
+            } else {
+                showStatus('login', 'Gagal mengirim data ke aplikasi', 'error');
             }
         });
         
-        // Handle form register
+        // Handle form daftar
         document.getElementById('register-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            clearStatusMessages();
             
             const name = document.getElementById('register-name').value;
+            const phone = document.getElementById('register-phone').value;
             const address = document.getElementById('register-address').value;
-            const phone = '62' + document.getElementById('register-phone').value;
             
-            const registerData = {
+            // Validasi
+            if (!phone.startsWith('628') || phone.length < 10) {
+                showStatus('register', 'Nomor HP harus mulai dengan 628 dan minimal 10 digit', 'error');
+                return;
+            }
+            
+            // Kirim response ke Kodular
+            const response = {
                 action: 'register',
+                status: 'success',
                 name: name,
+                phone: phone,
                 address: address,
-                phone: phone
+                timestamp: new Date().toISOString()
             };
             
-            if (sendToAppInventor(registerData)) {
+            if (sendToAppInventor(response)) {
+                showStatus('register', 'Pendaftaran berhasil!', 'success');
                 document.getElementById('register-form').reset();
+            } else {
+                showStatus('register', 'Gagal mengirim data ke aplikasi', 'error');
             }
         });
         
-        // Format input nomor HP (hanya angka)
+        // Fungsi tampilkan status
+        function showStatus(formType, message, type) {
+            const element = document.getElementById(`${formType}-status`);
+            element.textContent = message;
+            element.className = `status ${type}`;
+            element.style.display = 'block';
+        }
+        
+        // Format input nomor HP
         document.getElementById('login-phone').addEventListener('input', function(e) {
             this.value = this.value.replace(/\D/g, '');
         });
@@ -384,14 +243,9 @@
             this.value = this.value.replace(/\D/g, '');
         });
         
-        // Format input PIN (hanya angka, max 6 digit)
+        // Format input PIN
         document.getElementById('login-pin').addEventListener('input', function(e) {
             this.value = this.value.replace(/\D/g, '').slice(0, 6);
-        });
-
-        // Load Firebase data when page loads
-        window.addEventListener('DOMContentLoaded', (event) => {
-            loadFirebaseData();
         });
     </script>
 </body>
