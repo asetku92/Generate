@@ -1,114 +1,112 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>OtomaX PIN Hash API</title>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
-    <!-- CryptoJS for hashing -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBf3jpW54TnCaCunzezuOQsSiwEREwnPg0",
-            authDomain: "chatting-87e87.firebaseapp.com",
-            databaseURL: "https://chatting-87e87-default-rtdb.firebaseio.com",
-            projectId: "chatting-87e87",
-            storageBucket: "chatting-87e87.firebasestorage.app",
-            messagingSenderId: "240910634931",
-            appId: "1:240910634931:web:49aa4b9a0659d9115045c6",
-            measurementId: "G-10MWDS0DMK"
-        };
+  <title>OtomaX PIN Hash API</title>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+  <!-- CryptoJS for hashing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBf3jpW54TnCaCunzezuOQsSiwEREwnPg0",
+      authDomain: "chatting-87e87.firebaseapp.com",
+      databaseURL: "https://chatting-87e87-default-rtdb.firebaseio.com",
+      projectId: "chatting-87e87",
+      storageBucket: "chatting-87e87.firebasestorage.app",
+      messagingSenderId: "240910634931",
+      appId: "1:240910634931:web:49aa4b9a0659d9115045c6",
+      measurementId: "G-10MWDS0DMK"
+    };
 
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        
-        // Global variables to store keys
-        let appId = '';
-        let appKey = '';
-        let devKey = '';
-        
-        // Generate PIN hash according to OtomaX specs
-        function generatePinHash(pin) {
-            if (!appKey || !devKey) {
-                throw new Error('AppKey atau DevKey belum diatur');
-            }
-            
-            // Step 1: HMACSHA256(appKey, devKey)
-            const appDevHash = CryptoJS.HmacSHA256(appKey, devKey);
-            
-            // Step 2: Base64 of step 1 result
-            const appDevBase64 = CryptoJS.enc.Base64.stringify(appDevHash);
-            
-            // Step 3: HMACSHA256(pin, result from step 2)
-            const pinHash = CryptoJS.HmacSHA256(pin, appDevBase64);
-            
-            // Step 4: Base64 of step 3 result
-            return CryptoJS.enc.Base64.stringify(pinHash);
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Global variables
+    let appId = '';
+    let appKey = '';
+    let devKey = '';
+
+    // Generate PIN Hash
+    function generatePinHash(pin) {
+      const appDevHash = CryptoJS.HmacSHA256(appKey, devKey);
+      const appDevBase64 = CryptoJS.enc.Base64.stringify(appDevHash);
+      const pinHash = CryptoJS.HmacSHA256(pin, appDevBase64);
+      return CryptoJS.enc.Base64.stringify(pinHash);
+    }
+
+    // Proses permintaan PIN
+    function handleRequest() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pin = urlParams.get('pin');
+
+      if (!pin) {
+        return {
+          ok: false,
+          desc: "Parameter 'pin' diperlukan",
+          timestamp: new Date().toISOString()
+        };
+      }
+
+      try {
+        const pinHash = generatePinHash(pin);
+        return {
+          ok: true,
+          appId: appId,
+          pinHash: pinHash,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        return {
+          ok: false,
+          desc: error.message,
+          timestamp: new Date().toISOString()
+        };
+      }
+    }
+
+    // Load config from Firebase, then send JSON to Kodular
+    database.ref('DataApkAsiaPayment').once('value')
+      .then((snapshot) => {
+        const data = snapshot.val();
+
+        if (data) {
+          appId = data.AppId || '';
+          appKey = data.AppKey || '';
+          devKey = data.DevKey || '';
+
+          const response = handleRequest();
+
+          // ✅ Kirim JSON ke Kodular
+          if (window.AppInventor) {
+            window.AppInventor.setWebViewString(JSON.stringify(response));
+          }
+        } else {
+          const errorData = {
+            ok: false,
+            desc: "Konfigurasi tidak ditemukan",
+            timestamp: new Date().toISOString()
+          };
+          if (window.AppInventor) {
+            window.AppInventor.setWebViewString(JSON.stringify(errorData));
+          }
         }
-        
-        // Handle the request
-        function handleRequest() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const pin = urlParams.get('pin');
-            
-            if (!pin) {
-                return {
-                    ok: false,
-                    desc: "Parameter 'pin' diperlukan",
-                    timestamp: new Date().toISOString()
-                };
-            }
-            
-            try {
-                const pinHash = generatePinHash(pin);
-                return {
-                    ok: true,
-                    appId: appId,
-                    pinHash: pinHash,
-                    timestamp: new Date().toISOString()
-                };
-            } catch (error) {
-                return {
-                    ok: false,
-                    desc: error.message,
-                    timestamp: new Date().toISOString()
-                };
-            }
+      })
+      .catch((error) => {
+        const errorData = {
+          ok: false,
+          desc: "Gagal mengambil data: " + error.message,
+          timestamp: new Date().toISOString()
+        };
+        if (window.AppInventor) {
+          window.AppInventor.setWebViewString(JSON.stringify(errorData));
         }
-        
-        // Main execution
-        database.ref('DataApkAsiaPayment').once('value').then((snapshot) => {
-            const data = snapshot.val();
-            
-            if (data) {
-                appId = data.AppId || '';
-                appKey = data.AppKey || '';
-                devKey = data.DevKey || '';
-                
-                const response = handleRequest();
-                document.write(JSON.stringify(response));
-                document.close();
-            } else {
-                document.write(JSON.stringify({
-                    ok: false,
-                    desc: "Konfigurasi tidak ditemukan di Firebase",
-                    timestamp: new Date().toISOString()
-                }));
-                document.close();
-            }
-        }).catch((error) => {
-            document.write(JSON.stringify({
-                ok: false,
-                desc: "Gagal memuat konfigurasi: " + error.message,
-                timestamp: new Date().toISOString()
-            }));
-            document.close();
-        });
-    </script>
+      });
+  </script>
 </head>
 <body>
-<!-- This page only returns JSON responses -->
+<!-- Halaman ini tidak menampilkan apa pun secara visual -->
 </body>
 </html>
