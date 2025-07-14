@@ -117,11 +117,7 @@
             margin-top: 15px;
             padding: 10px;
             border-radius: 5px;
-        }
-        
-        .success {
-            background-color: #d4edda;
-            color: #155724;
+            display: none;
         }
         
         .error {
@@ -170,7 +166,7 @@
                 <div class="form-group">
                     <label for="login-phone">Nomor HP</label>
                     <div class="phone-input">
-                        <span class="phone-prefix">+62</span>
+                        <span class="phone-prefix">62</span>
                         <input type="tel" id="login-phone" class="phone-number" placeholder="8123456789" pattern="[0-9]{9,13}" required>
                     </div>
                 </div>
@@ -181,7 +177,7 @@
                     </div>
                 </div>
                 <button type="submit">Masuk</button>
-                <div id="login-status" class="status-message" style="display:none;"></div>
+                <div id="login-status" class="status-message"></div>
                 <p class="switch-text">Belum punya akun? <a href="#" id="show-register">Daftar disini</a></p>
             </form>
         </div>
@@ -201,7 +197,7 @@
                 <div class="form-group">
                     <label for="register-phone">Nomor HP</label>
                     <div class="phone-input">
-                        <span class="phone-prefix">+62</span>
+                        <span class="phone-prefix">62</span>
                         <input type="tel" id="register-phone" class="phone-number" placeholder="8123456789" pattern="[0-9]{9,13}" required>
                     </div>
                 </div>
@@ -218,7 +214,7 @@
                     </div>
                 </div>
                 <button type="submit">Daftar</button>
-                <div id="register-status" class="status-message" style="display:none;"></div>
+                <div id="register-status" class="status-message"></div>
                 <p class="switch-text">Sudah punya akun? <a href="#" id="show-login">Masuk disini</a></p>
             </form>
         </div>
@@ -230,60 +226,62 @@
             e.preventDefault();
             document.getElementById('login-container').style.display = 'none';
             document.getElementById('register-container').style.display = 'block';
+            clearStatusMessages();
         });
         
         document.getElementById('show-login').addEventListener('click', function(e) {
             e.preventDefault();
             document.getElementById('register-container').style.display = 'none';
             document.getElementById('login-container').style.display = 'block';
+            clearStatusMessages();
         });
+        
+        function clearStatusMessages() {
+            document.getElementById('login-status').style.display = 'none';
+            document.getElementById('register-status').style.display = 'none';
+        }
         
         // Fungsi untuk mengirim data ke App Inventor WebViewString
         function sendToAppInventor(data) {
             try {
+                // Validasi nomor HP
+                const phone = data.phone;
+                if (!phone.startsWith('628') || phone.length < 10 || phone.length > 15) {
+                    showError(data.action, 'Nomor HP harus dimulai dengan 628 dan 10-15 digit');
+                    return false;
+                }
+                
                 // Kirim data ke WebViewString
                 window.AppInventor.setWebViewString(JSON.stringify(data));
-                
-                // Tampilkan pesan sukses
-                const statusElement = data.action === 'login' ? 
-                    document.getElementById('login-status') : 
-                    document.getElementById('register-status');
-                
-                statusElement.textContent = data.action === 'login' ? 
-                    'Login berhasil! Memproses...' : 
-                    'Pendaftaran berhasil!';
-                statusElement.className = 'status-message success';
-                statusElement.style.display = 'block';
-                
-                // Reset form pendaftaran jika sukses
-                if(data.action === 'register') {
-                    document.getElementById('register-form').reset();
-                }
+                return true;
             } catch (error) {
                 console.error('Error:', error);
-                const statusElement = data.action === 'login' ? 
-                    document.getElementById('login-status') : 
-                    document.getElementById('register-status');
-                
-                statusElement.textContent = 'Gagal mengirim data. Pastikan aplikasi terbuka.';
-                statusElement.className = 'status-message error';
-                statusElement.style.display = 'block';
+                showError(data.action, 'Gagal mengirim data. Pastikan aplikasi terbuka.');
+                return false;
             }
+        }
+        
+        function showError(formType, message) {
+            const statusElement = formType === 'login' ? 
+                document.getElementById('login-status') : 
+                document.getElementById('register-status');
+            
+            statusElement.textContent = message;
+            statusElement.className = 'status-message error';
+            statusElement.style.display = 'block';
         }
         
         // Handle form login
         document.getElementById('login-form').addEventListener('submit', function(e) {
             e.preventDefault();
+            clearStatusMessages();
             
-            const phone = '+62' + document.getElementById('login-phone').value;
+            const phone = '62' + document.getElementById('login-phone').value;
             const pin = document.getElementById('login-pin').value;
             
             // Validasi PIN
             if(pin.length !== 6 || !/^\d+$/.test(pin)) {
-                const statusElement = document.getElementById('login-status');
-                statusElement.textContent = 'PIN harus 6 digit angka';
-                statusElement.className = 'status-message error';
-                statusElement.style.display = 'block';
+                showError('login', 'PIN harus 6 digit angka');
                 return;
             }
             
@@ -293,34 +291,31 @@
                 pin: pin
             };
             
-            sendToAppInventor(loginData);
+            if (sendToAppInventor(loginData)) {
+                document.getElementById('login-form').reset();
+            }
         });
         
         // Handle form register
         document.getElementById('register-form').addEventListener('submit', function(e) {
             e.preventDefault();
+            clearStatusMessages();
             
             const name = document.getElementById('register-name').value;
             const address = document.getElementById('register-address').value;
-            const phone = '+62' + document.getElementById('register-phone').value;
+            const phone = '62' + document.getElementById('register-phone').value;
             const pin = document.getElementById('register-pin').value;
             const confirmPin = document.getElementById('register-confirm-pin').value;
             
             // Validasi PIN
             if(pin.length !== 6 || !/^\d+$/.test(pin)) {
-                const statusElement = document.getElementById('register-status');
-                statusElement.textContent = 'PIN harus 6 digit angka';
-                statusElement.className = 'status-message error';
-                statusElement.style.display = 'block';
+                showError('register', 'PIN harus 6 digit angka');
                 return;
             }
             
             // Validasi konfirmasi PIN
             if(pin !== confirmPin) {
-                const statusElement = document.getElementById('register-status');
-                statusElement.textContent = 'PIN dan Konfirmasi PIN tidak cocok';
-                statusElement.className = 'status-message error';
-                statusElement.style.display = 'block';
+                showError('register', 'PIN dan Konfirmasi PIN tidak cocok');
                 return;
             }
             
@@ -332,7 +327,9 @@
                 pin: pin
             };
             
-            sendToAppInventor(registerData);
+            if (sendToAppInventor(registerData)) {
+                document.getElementById('register-form').reset();
+            }
         });
         
         // Format input nomor HP (hanya angka)
