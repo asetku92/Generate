@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login & Daftar</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -29,6 +32,30 @@
             100% { background-position: 0% 50%; }
         }
         
+        .app-header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: white;
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            padding: 0 20px;
+        }
+        
+        .app-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .app-tagline {
+            font-size: 16px;
+            font-weight: 400;
+            opacity: 0.9;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        
         .container {
             display: flex;
             width: 100%;
@@ -37,6 +64,7 @@
             border-radius: 20px;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
             overflow: hidden;
+            margin-top: 80px;
         }
         
         .form-container {
@@ -158,6 +186,11 @@
     </style>
 </head>
 <body>
+    <div class="app-header">
+        <div class="app-name" id="app-name">Loading...</div>
+        <div class="app-tagline" id="app-tagline"></div>
+    </div>
+    
     <div class="container">
         <!-- Form Login -->
         <div class="form-container" id="login-container">
@@ -184,14 +217,14 @@
         
         <!-- Form Daftar (Awalnya tersembunyi) -->
         <div class="form-container" id="register-container" style="display:none;">
-            <h2>Pendaftaran Akun Baru</h2>
+            <h2>Pendaftaran Outlet Baru</h2>
             <form id="register-form">
                 <div class="form-group">
-                    <label for="register-name">Nama Lengkap</label>
-                    <input type="text" id="register-name" placeholder="Masukkan nama lengkap" required>
+                    <label for="register-name">Nama Outlet</label>
+                    <input type="text" id="register-name" placeholder="Masukkan nama outlet" required>
                 </div>
                 <div class="form-group">
-                    <label for="register-address">Alamat</label>
+                    <label for="register-address">Alamat Outlet</label>
                     <textarea id="register-address" rows="3" placeholder="Masukkan alamat lengkap" required></textarea>
                 </div>
                 <div class="form-group">
@@ -199,18 +232,6 @@
                     <div class="phone-input">
                         <span class="phone-prefix">62</span>
                         <input type="tel" id="register-phone" class="phone-number" placeholder="8123456789" pattern="[0-9]{9,13}" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="register-pin">Buat PIN (6 digit angka)</label>
-                    <div class="pin-container">
-                        <input type="password" id="register-pin" class="pin-input" maxlength="6" pattern="[0-9]{6}" placeholder="••••••" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="register-confirm-pin">Konfirmasi PIN</label>
-                    <div class="pin-container">
-                        <input type="password" id="register-confirm-pin" class="pin-input" maxlength="6" pattern="[0-9]{6}" placeholder="••••••" required>
                     </div>
                 </div>
                 <button type="submit">Daftar</button>
@@ -221,6 +242,43 @@
     </div>
 
     <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBf3jpW54TnCaCunzezuOQsSiwEREwnPg0",
+            authDomain: "chatting-87e87.firebaseapp.com",
+            databaseURL: "https://chatting-87e87-default-rtdb.firebaseio.com",
+            projectId: "chatting-87e87",
+            storageBucket: "chatting-87e87.firebasestorage.app",
+            messagingSenderId: "240910634931",
+            appId: "1:240910634931:web:49aa4b9a0659d9115045c6",
+            measurementId: "G-10MWDS0DMK"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Load data from Firebase
+        function loadFirebaseData() {
+            const appRef = database.ref('DataApkAsiaPayment');
+            
+            appRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                
+                // Update app name and tagline
+                document.getElementById('app-name').textContent = data.nama_aplikasi || 'Aplikasi Saya';
+                document.getElementById('app-tagline').textContent = data.Tagline || '';
+                
+                // Update background gradient
+                if (data.Bg1 && data.Bg2 && data.Bg3) {
+                    document.body.style.background = 
+                        `linear-gradient(135deg, ${data.Bg1}, ${data.Bg2}, ${data.Bg3})`;
+                }
+            }, (error) => {
+                console.error("Error loading Firebase data:", error);
+            });
+        }
+
         // Fungsi untuk toggle antara form login dan register
         document.getElementById('show-register').addEventListener('click', function(e) {
             e.preventDefault();
@@ -304,27 +362,12 @@
             const name = document.getElementById('register-name').value;
             const address = document.getElementById('register-address').value;
             const phone = '62' + document.getElementById('register-phone').value;
-            const pin = document.getElementById('register-pin').value;
-            const confirmPin = document.getElementById('register-confirm-pin').value;
-            
-            // Validasi PIN
-            if(pin.length !== 6 || !/^\d+$/.test(pin)) {
-                showError('register', 'PIN harus 6 digit angka');
-                return;
-            }
-            
-            // Validasi konfirmasi PIN
-            if(pin !== confirmPin) {
-                showError('register', 'PIN dan Konfirmasi PIN tidak cocok');
-                return;
-            }
             
             const registerData = {
                 action: 'register',
                 name: name,
                 address: address,
-                phone: phone,
-                pin: pin
+                phone: phone
             };
             
             if (sendToAppInventor(registerData)) {
@@ -345,13 +388,10 @@
         document.getElementById('login-pin').addEventListener('input', function(e) {
             this.value = this.value.replace(/\D/g, '').slice(0, 6);
         });
-        
-        document.getElementById('register-pin').addEventListener('input', function(e) {
-            this.value = this.value.replace(/\D/g, '').slice(0, 6);
-        });
-        
-        document.getElementById('register-confirm-pin').addEventListener('input', function(e) {
-            this.value = this.value.replace(/\D/g, '').slice(0, 6);
+
+        // Load Firebase data when page loads
+        window.addEventListener('DOMContentLoaded', (event) => {
+            loadFirebaseData();
         });
     </script>
 </body>
