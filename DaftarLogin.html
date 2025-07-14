@@ -117,7 +117,6 @@
             margin-top: 15px;
             padding: 10px;
             border-radius: 5px;
-            display: none;
         }
         
         .success {
@@ -172,7 +171,7 @@
                     <label for="login-phone">Nomor HP</label>
                     <div class="phone-input">
                         <span class="phone-prefix">+62</span>
-                        <input type="tel" id="login-phone" class="phone-number" placeholder="8xx xxxx xxxx" pattern="[0-9]{9,13}" required>
+                        <input type="tel" id="login-phone" class="phone-number" placeholder="8123456789" pattern="[0-9]{9,13}" required>
                     </div>
                 </div>
                 <div class="form-group">
@@ -182,7 +181,7 @@
                     </div>
                 </div>
                 <button type="submit">Masuk</button>
-                <div id="login-status" class="status-message"></div>
+                <div id="login-status" class="status-message" style="display:none;"></div>
                 <p class="switch-text">Belum punya akun? <a href="#" id="show-register">Daftar disini</a></p>
             </form>
         </div>
@@ -203,7 +202,7 @@
                     <label for="register-phone">Nomor HP</label>
                     <div class="phone-input">
                         <span class="phone-prefix">+62</span>
-                        <input type="tel" id="register-phone" class="phone-number" placeholder="8xx xxxx xxxx" pattern="[0-9]{9,13}" required>
+                        <input type="tel" id="register-phone" class="phone-number" placeholder="8123456789" pattern="[0-9]{9,13}" required>
                     </div>
                 </div>
                 <div class="form-group">
@@ -219,7 +218,7 @@
                     </div>
                 </div>
                 <button type="submit">Daftar</button>
-                <div id="register-status" class="status-message"></div>
+                <div id="register-status" class="status-message" style="display:none;"></div>
                 <p class="switch-text">Sudah punya akun? <a href="#" id="show-login">Masuk disini</a></p>
             </form>
         </div>
@@ -239,55 +238,37 @@
             document.getElementById('login-container').style.display = 'block';
         });
         
-        // Fungsi untuk mengirim data ke App Inventor Web
-        function sendToAppInventor(data, endpoint) {
-            // Ganti URL berikut dengan URL Web Anda dari App Inventor
-            const webUrl = 'https://your-app-inventor-web-url.com/your-endpoint';
-            
-            fetch(webUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-                const statusElement = endpoint === 'login' ? 
+        // Fungsi untuk mengirim data ke App Inventor WebViewString
+        function sendToAppInventor(data) {
+            try {
+                // Kirim data ke WebViewString
+                window.AppInventor.setWebViewString(JSON.stringify(data));
+                
+                // Tampilkan pesan sukses
+                const statusElement = data.action === 'login' ? 
                     document.getElementById('login-status') : 
                     document.getElementById('register-status');
                 
-                statusElement.textContent = endpoint === 'login' ? 
-                    'Login berhasil! Mengarahkan...' : 
-                    'Pendaftaran berhasil! Silakan login.';
+                statusElement.textContent = data.action === 'login' ? 
+                    'Login berhasil! Memproses...' : 
+                    'Pendaftaran berhasil!';
                 statusElement.className = 'status-message success';
                 statusElement.style.display = 'block';
                 
-                if(endpoint === 'login') {
-                    // Redirect atau tindakan setelah login sukses
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 2000);
-                } else {
-                    // Kembali ke form login setelah pendaftaran
-                    setTimeout(() => {
-                        document.getElementById('register-container').style.display = 'none';
-                        document.getElementById('login-container').style.display = 'block';
-                        document.getElementById('register-form').reset();
-                    }, 2000);
+                // Reset form pendaftaran jika sukses
+                if(data.action === 'register') {
+                    document.getElementById('register-form').reset();
                 }
-            })
-            .catch((error) => {
+            } catch (error) {
                 console.error('Error:', error);
-                const statusElement = endpoint === 'login' ? 
+                const statusElement = data.action === 'login' ? 
                     document.getElementById('login-status') : 
                     document.getElementById('register-status');
                 
-                statusElement.textContent = 'Terjadi kesalahan. Silakan coba lagi.';
+                statusElement.textContent = 'Gagal mengirim data. Pastikan aplikasi terbuka.';
                 statusElement.className = 'status-message error';
                 statusElement.style.display = 'block';
-            });
+            }
         }
         
         // Handle form login
@@ -312,7 +293,7 @@
                 pin: pin
             };
             
-            sendToAppInventor(loginData, 'login');
+            sendToAppInventor(loginData);
         });
         
         // Handle form register
@@ -351,10 +332,10 @@
                 pin: pin
             };
             
-            sendToAppInventor(registerData, 'register');
+            sendToAppInventor(registerData);
         });
         
-        // Format input nomor HP
+        // Format input nomor HP (hanya angka)
         document.getElementById('login-phone').addEventListener('input', function(e) {
             this.value = this.value.replace(/\D/g, '');
         });
@@ -363,7 +344,7 @@
             this.value = this.value.replace(/\D/g, '');
         });
         
-        // Format input PIN
+        // Format input PIN (hanya angka, max 6 digit)
         document.getElementById('login-pin').addEventListener('input', function(e) {
             this.value = this.value.replace(/\D/g, '').slice(0, 6);
         });
