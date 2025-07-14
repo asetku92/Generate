@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loading Aplikasi...</title>
+    <title>Login Reseller - Nomor HP</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
@@ -29,6 +29,7 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2, #6B8DD6);
             transition: all 0.5s ease;
             background-size: cover;
             background-attachment: fixed;
@@ -231,7 +232,6 @@
             100% { transform: scale(1); }
         }
         
-        /* Responsive adjustments */
         @media (max-width: 480px) {
             .card {
                 margin-top: 100px;
@@ -248,19 +248,19 @@
     </style>
 </head>
 <body>
-    <!-- Loading Screen with Logo -->
+    <!-- Loading Screen -->
     <div class="loading-overlay" id="loading-screen">
         <img src="" alt="Logo" class="loading-logo" id="loading-logo">
         <div class="spinner"></div>
     </div>
 
-    <!-- App Header with Logo -->
+    <!-- App Header -->
     <div class="app-header">
         <div class="logo-container">
             <img src="" alt="App Logo" class="app-logo" id="app-logo">
         </div>
-        <div class="app-name" id="app-name">Aplikasi Reseller</div>
-        <div class="app-tagline" id="app-tagline">Loading...</div>
+        <div class="app-name" id="app-name">ASIA PAYMENT</div>
+        <div class="app-tagline" id="app-tagline">Pulsa & PPOB Isi pulsa & bayar tagihan dalam 1 klik</div>
     </div>
 
     <!-- Login Form -->
@@ -271,12 +271,12 @@
         <div class="card-body">
             <form id="login-form">
                 <div class="form-group">
-                    <label for="login-kode">Kode Reseller</label>
-                    <input type="text" id="login-kode" placeholder="Masukkan kode reseller" required>
+                    <label for="login-phone">Nomor HP</label>
+                    <input type="tel" id="login-phone" placeholder="628xxxx" required>
                 </div>
                 <div class="form-group">
                     <label for="login-pin">PIN</label>
-                    <input type="password" id="login-pin" placeholder="Masukkan 6 digit PIN" required maxlength="6">
+                    <input type="password" id="login-pin" placeholder="Masukkan PIN Anda" required minlength="4">
                 </div>
                 <button type="submit" class="btn">Login</button>
                 <div id="login-alert" class="alert"></div>
@@ -295,16 +295,16 @@
         <div class="card-body">
             <form id="register-form">
                 <div class="form-group">
-                    <label for="register-kode">Kode Reseller</label>
-                    <input type="text" id="register-kode" placeholder="Contoh: yusuf" required>
+                    <label for="register-phone">Nomor HP</label>
+                    <input type="tel" id="register-phone" placeholder="628xxxx" required>
                 </div>
                 <div class="form-group">
                     <label for="register-name">Nama Lengkap</label>
                     <input type="text" id="register-name" placeholder="Nama pemilik outlet" required>
                 </div>
                 <div class="form-group">
-                    <label for="register-phone">Nomor HP</label>
-                    <input type="tel" id="register-phone" placeholder="628xxxx" required>
+                    <label for="register-address">Alamat</label>
+                    <input type="text" id="register-address" placeholder="Alamat lengkap outlet" required>
                 </div>
                 <button type="submit" class="btn">Daftar</button>
                 <div id="register-alert" class="alert"></div>
@@ -339,8 +339,8 @@
                 
                 if (config) {
                     // Update app info
-                    document.getElementById('app-name').textContent = config.nama_aplikasi || 'Aplikasi Reseller';
-                    document.getElementById('app-tagline').textContent = config.Tagline || '';
+                    document.getElementById('app-name').textContent = config.nama_aplikasi || 'ASIA PAYMENT';
+                    document.getElementById('app-tagline').textContent = config.Tagline || 'Pulsa & PPOB Isi pulsa & bayar tagihan dalam 1 klik';
                     
                     // Update logo
                     if (config.Logo) {
@@ -354,7 +354,7 @@
                             `linear-gradient(135deg, ${config.Bg1}, ${config.Bg2}, ${config.Bg3})`;
                     }
                     
-                    // Hide loading screen after 1 second (for smooth transition)
+                    // Hide loading screen
                     setTimeout(() => {
                         document.getElementById('loading-screen').style.display = 'none';
                     }, 1000);
@@ -395,24 +395,25 @@
         document.getElementById('login-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const kode = document.getElementById('login-kode').value.trim();
+            const phone = document.getElementById('login-phone').value.trim();
             const pin = document.getElementById('login-pin').value;
             
-            // Validation
-            if (!kode || !pin) {
-                showAlert('login', 'Harap isi kode dan PIN', 'danger');
+            // Phone validation
+            if (!phone.startsWith('628') || phone.length < 10) {
+                showAlert('login', 'Nomor HP harus mulai dengan 628 dan minimal 10 digit', 'danger');
                 return;
             }
             
-            if (pin.length !== 6 || !/^\d+$/.test(pin)) {
-                showAlert('login', 'PIN harus 6 digit angka', 'danger');
+            // PIN validation (min 4 characters)
+            if (pin.length < 4) {
+                showAlert('login', 'PIN minimal 4 karakter', 'danger');
                 return;
             }
             
             // Send to WebViewString
             const success = sendToWebView({
                 action: 'login',
-                kode: kode,
+                phone: phone,
                 pin: pin,
                 timestamp: new Date().toISOString()
             });
@@ -428,33 +429,42 @@
         document.getElementById('register-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const kode = document.getElementById('register-kode').value.trim();
-            const name = document.getElementById('register-name').value.trim();
             const phone = document.getElementById('register-phone').value.trim();
+            const name = document.getElementById('register-name').value.trim();
+            const address = document.getElementById('register-address').value.trim();
             
-            // Validation
-            if (!kode || !name || !phone) {
-                showAlert('register', 'Harap isi semua field', 'danger');
+            // Phone validation
+            if (!phone.startsWith('628') || phone.length < 10) {
+                showAlert('register', 'Nomor HP harus mulai dengan 628 dan minimal 10 digit', 'danger');
                 return;
             }
             
-            if (!phone.startsWith('628') || phone.length < 10) {
-                showAlert('register', 'Nomor HP harus mulai dengan 628 dan minimal 10 digit', 'danger');
+            // Name validation
+            if (name.length < 3) {
+                showAlert('register', 'Nama minimal 3 karakter', 'danger');
+                return;
+            }
+            
+            // Address validation
+            if (address.length < 5) {
+                showAlert('register', 'Alamat minimal 5 karakter', 'danger');
                 return;
             }
             
             // Send to WebViewString
             const success = sendToWebView({
                 action: 'register',
-                kode: kode,
-                name: name,
                 phone: phone,
+                name: name,
+                address: address,
                 timestamp: new Date().toISOString()
             });
             
             if (success) {
                 showAlert('register', 'Sedang memproses pendaftaran...', 'success');
                 document.getElementById('register-form').reset();
+                document.getElementById('register-card').style.display = 'none';
+                document.getElementById('login-card').style.display = 'block';
             } else {
                 showAlert('register', 'Gagal mengirim data ke aplikasi', 'danger');
             }
@@ -475,9 +485,9 @@
             document.getElementById('register-alert').style.display = 'none';
         });
 
-        // Format inputs
-        document.getElementById('login-pin').addEventListener('input', function(e) {
-            this.value = this.value.replace(/\D/g, '').slice(0, 6);
+        // Format phone number input
+        document.getElementById('login-phone').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '');
         });
 
         document.getElementById('register-phone').addEventListener('input', function(e) {
