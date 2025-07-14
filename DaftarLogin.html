@@ -13,6 +13,7 @@
             --secondary: #3a0ca3;
             --light: #f8f9fa;
             --dark: #212529;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         
         * {
@@ -28,45 +29,73 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
-            transition: background 0.5s ease;
+            transition: all 0.5s ease;
+            background-size: cover;
+            background-attachment: fixed;
         }
         
         .app-header {
             position: fixed;
-            top: 20px;
+            top: 0;
             left: 0;
             width: 100%;
             text-align: center;
             color: white;
             z-index: 100;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            padding: 20px 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+        }
+        
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .app-logo {
+            height: 60px;
+            width: auto;
+            max-width: 200px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            transition: all 0.3s ease;
         }
         
         .app-name {
             font-size: 24px;
             font-weight: 700;
             margin-bottom: 5px;
+            text-shadow: var(--shadow);
         }
         
         .app-tagline {
             font-size: 14px;
             opacity: 0.9;
+            text-shadow: var(--shadow);
+            max-width: 80%;
+            margin: 0 auto;
         }
         
         .card {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.97);
             border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--shadow);
             width: 100%;
             max-width: 450px;
             overflow: hidden;
             z-index: 10;
+            margin-top: 120px;
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(5px);
         }
         
         .card-header {
-            padding: 20px;
+            padding: 25px;
             text-align: center;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            background: var(--primary);
+            color: white;
         }
         
         .card-body {
@@ -82,26 +111,29 @@
             margin-bottom: 8px;
             color: var(--dark);
             font-weight: 500;
+            font-size: 14px;
         }
         
         input {
             width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e9ecef;
+            padding: 14px 15px;
+            border: 1px solid #e9ecef;
             border-radius: 8px;
             font-size: 15px;
             transition: all 0.3s;
+            background: rgba(255,255,255,0.8);
         }
         
         input:focus {
             border-color: var(--primary);
             outline: none;
             box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            background: white;
         }
         
         .btn {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             border: none;
             border-radius: 8px;
             background: var(--primary);
@@ -110,11 +142,14 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            margin-top: 10px;
+            box-shadow: var(--shadow);
         }
         
         .btn:hover {
             background: var(--secondary);
             transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
         }
         
         .alert {
@@ -122,28 +157,37 @@
             border-radius: 8px;
             margin-top: 20px;
             display: none;
+            font-size: 14px;
         }
         
         .alert-success {
             background-color: #d1fae5;
             color: #065f46;
+            border-left: 4px solid #10b981;
         }
         
         .alert-danger {
             background-color: #fee2e2;
             color: #b91c1c;
+            border-left: 4px solid #ef4444;
         }
         
         .switch-text {
             text-align: center;
             margin-top: 20px;
             color: #6c757d;
+            font-size: 14px;
         }
         
         .switch-text a {
             color: var(--primary);
             text-decoration: none;
             font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .switch-text a:hover {
+            text-decoration: underline;
         }
         
         .loading-overlay {
@@ -152,19 +196,27 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.8);
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 1000;
         }
         
+        .loading-logo {
+            height: 60px;
+            margin-bottom: 20px;
+            opacity: 0.8;
+            animation: pulse 2s infinite;
+        }
+        
         .spinner {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary);
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             animation: spin 1s linear infinite;
         }
         
@@ -172,16 +224,41 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .card {
+                margin-top: 100px;
+            }
+            
+            .app-logo {
+                height: 50px;
+            }
+            
+            .app-name {
+                font-size: 20px;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- Loading Screen -->
+    <!-- Loading Screen with Logo -->
     <div class="loading-overlay" id="loading-screen">
+        <img src="" alt="Logo" class="loading-logo" id="loading-logo">
         <div class="spinner"></div>
     </div>
 
-    <!-- App Header -->
+    <!-- App Header with Logo -->
     <div class="app-header">
+        <div class="logo-container">
+            <img src="" alt="App Logo" class="app-logo" id="app-logo">
+        </div>
         <div class="app-name" id="app-name">Aplikasi Reseller</div>
         <div class="app-tagline" id="app-tagline">Loading...</div>
     </div>
@@ -265,14 +342,22 @@
                     document.getElementById('app-name').textContent = config.nama_aplikasi || 'Aplikasi Reseller';
                     document.getElementById('app-tagline').textContent = config.Tagline || '';
                     
+                    // Update logo
+                    if (config.Logo) {
+                        document.getElementById('app-logo').src = config.Logo;
+                        document.getElementById('loading-logo').src = config.Logo;
+                    }
+                    
                     // Update background
                     if (config.Bg1 && config.Bg2 && config.Bg3) {
                         document.body.style.background = 
                             `linear-gradient(135deg, ${config.Bg1}, ${config.Bg2}, ${config.Bg3})`;
                     }
                     
-                    // Hide loading screen
-                    document.getElementById('loading-screen').style.display = 'none';
+                    // Hide loading screen after 1 second (for smooth transition)
+                    setTimeout(() => {
+                        document.getElementById('loading-screen').style.display = 'none';
+                    }, 1000);
                 }
             }, (error) => {
                 console.error("Error loading config:", error);
