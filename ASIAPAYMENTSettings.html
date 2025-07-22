@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASIAPAYMENT Settings</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        .save-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 12px;
+            margin: 2px 2px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        .save-btn:hover {
+            background-color: #45a049;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 3px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+    </style>
+</head>
+<body>
+    <h1>ASIAPAYMENT Settings</h1>
+    <div id="status" class="status" style="display: none;"></div>
+    <table id="settingsTable">
+        <thead>
+            <tr>
+                <th>Setting Name</th>
+                <th>Value</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="settingsBody">
+            <!-- Table content will be populated by JavaScript -->
+        </tbody>
+    </table>
+
+    <script>
+        // Your Firebase configuration
+        const firebaseConfig = {
+            databaseURL: "https://steady-fin-368617-default-rtdb.firebaseio.com/"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const settingsRef = database.ref('ASIAPAYMENT/setting');
+
+        // List of all setting keys
+        const settingKeys = [
+            "AktifkanDL", "BatalTransaksi", "BatalTransferSaldo", "CekHarga", "CekMarkup",
+            "CekMarkupProduk", "CekMarkupProduk2", "CekMutasi", "CekMutasi2", "CekOid",
+            "CekSaldo", "CekSaldoDL", "CekStatusTransaksi", "CekStatusTransaksi2", "CekStatusTransaksi3",
+            "CekTransaksiAkhir", "DaftarDL", "DaftarDL2", "DaftarDL3", "DaftarNonMember",
+            "HapusGTalk", "HapusGTalk2", "HapusMarkupProduk", "HapusMarkupProduk2", "HapusMarkupProduk3",
+            "HapusNomor", "HapusNomor2", "HapusWA", "HapusYM", "HapusYM2",
+            "LaporanMutasi", "LaporanTransaksi", "LihatHadiahPoin", "ListDL", "ListDL2",
+            "ListPengirim", "ListPengirimGTalk", "ListPengirimGTalk2", "ListPengirimSMS", "ListPengirimSMS2",
+            "ListPengirimYM", "ListPengirimYM2", "NonAktifkanDL", "ResetPin", "TambahGTalk",
+            "TambahGTalk2", "TambahNomor", "TambahNomor2", "TambahWA", "TambahYM",
+            "TambahYM2", "TiketDeposit", "Transaksi", "Transaksi10", "Transaksi11",
+            "Transaksi12", "Transaksi13", "Transaksi14", "Transaksi15", "Transaksi16",
+            "Transaksi17", "Transaksi18", "Transaksi19", "Transaksi2", "Transaksi20",
+            "Transaksi21", "Transaksi22", "Transaksi23", "Transaksi24", "Transaksi25",
+            "Transaksi26", "Transaksi27", "Transaksi28", "Transaksi29", "Transaksi3",
+            "Transaksi4", "Transaksi5", "Transaksi6", "Transaksi7", "Transaksi8",
+            "Transaksi9", "TransaksiBebasDobel", "TransferSaldo", "TransferSaldoLintas", "TukarKomisi",
+            "TukarKomisi2", "TukarPoin", "UbahAlamatIP", "UbahLevel", "UbahMarkup",
+            "UbahMarkupProduk", "UbahMarkupProduk2", "UbahNama", "UbahOid", "UbahPasswordIP",
+            "UbahPin", "UbahReportURL"
+        ];
+
+        // Function to display a status message
+        function showStatus(message, isSuccess) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = isSuccess ? 'status success' : 'status error';
+            statusDiv.style.display = 'block';
+            
+            // Hide the status after 3 seconds
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // Function to update a setting in Firebase
+        function updateSetting(key, value) {
+            const updates = {};
+            updates[key] = value;
+            
+            settingsRef.update(updates)
+                .then(() => {
+                    showStatus(`Successfully updated ${key} to ${value}`, true);
+                })
+                .catch((error) => {
+                    showStatus(`Error updating ${key}: ${error.message}`, false);
+                });
+        }
+
+        // Function to create the table
+        function createTable() {
+            const tableBody = document.getElementById('settingsBody');
+            
+            // Fetch all settings data
+            settingsRef.once('value')
+                .then((snapshot) => {
+                    const settingsData = snapshot.val();
+                    
+                    // Create a row for each setting key
+                    settingKeys.forEach(key => {
+                        const row = document.createElement('tr');
+                        
+                        // Setting name cell
+                        const nameCell = document.createElement('td');
+                        nameCell.textContent = key;
+                        row.appendChild(nameCell);
+                        
+                        // Value input cell
+                        const valueCell = document.createElement('td');
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.id = `input_${key}`;
+                        input.value = settingsData[key] || '';
+                        valueCell.appendChild(input);
+                        row.appendChild(valueCell);
+                        
+                        // Save button cell
+                        const actionCell = document.createElement('td');
+                        const saveButton = document.createElement('button');
+                        saveButton.textContent = 'Save';
+                        saveButton.className = 'save-btn';
+                        saveButton.onclick = () => {
+                            const newValue = input.value;
+                            updateSetting(key, newValue);
+                        };
+                        actionCell.appendChild(saveButton);
+                        row.appendChild(actionCell);
+                        
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch((error) => {
+                    showStatus(`Error loading settings: ${error.message}`, false);
+                });
+        }
+
+        // Initialize the table when the page loads
+        window.onload = createTable;
+    </script>
+</body>
+</html>
