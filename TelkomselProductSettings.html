@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telkomsel Product Settings</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        input {
+            width: 100%;
+            padding: 6px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        .add-row {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Telkomsel Product Settings</h1>
+    
+    <div id="status" class="status"></div>
+    
+    <table id="productTable">
+        <thead>
+            <tr>
+                <th width="40%">Key</th>
+                <th width="50%">Value</th>
+                <th width="10%">Action</th>
+            </tr>
+        </thead>
+        <tbody id="productBody">
+            <!-- Table content will be populated by JavaScript -->
+        </tbody>
+    </table>
+    
+    <button class="add-row" onclick="addNewRow()">+ Add New Row</button>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            databaseURL: "https://steady-fin-368617-default-rtdb.firebaseio.com/"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const productsRef = database.ref('ASIAPAYMENT/setting/ProdukProvider/Telkomsel');
+
+        // Function to show status message
+        function showStatus(message, isSuccess) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = isSuccess ? 'status success' : 'status error';
+            
+            setTimeout(() => {
+                statusDiv.className = 'status';
+            }, 3000);
+        }
+
+        // Function to update a product setting in Firebase
+        function updateSetting(key, value) {
+            const updates = {};
+            updates[key] = value;
+            
+            productsRef.update(updates)
+                .then(() => {
+                    showStatus(`Successfully updated ${key}`, true);
+                })
+                .catch((error) => {
+                    showStatus(`Error updating ${key}: ${error.message}`, false);
+                });
+        }
+
+        // Function to delete a setting from Firebase
+        function deleteSetting(key) {
+            if (confirm(`Are you sure you want to delete ${key}?`)) {
+                productsRef.child(key).remove()
+                    .then(() => {
+                        showStatus(`Successfully deleted ${key}`, true);
+                    })
+                    .catch((error) => {
+                        showStatus(`Error deleting ${key}: ${error.message}`, false);
+                    });
+            }
+        }
+
+        // Function to add a new empty row for creating settings
+        function addNewRow() {
+            const tableBody = document.getElementById('productBody');
+            const newRow = document.createElement('tr');
+            
+            // Key cell
+            const keyCell = document.createElement('td');
+            const keyInput = document.createElement('input');
+            keyInput.type = 'text';
+            keyInput.placeholder = 'Enter new key';
+            keyCell.appendChild(keyInput);
+            newRow.appendChild(keyCell);
+            
+            // Value cell
+            const valueCell = document.createElement('td');
+            const valueInput = document.createElement('input');
+            valueInput.type = 'text';
+            valueInput.placeholder = 'Enter value';
+            valueCell.appendChild(valueInput);
+            newRow.appendChild(valueCell);
+            
+            // Action cell
+            const actionCell = document.createElement('td');
+            const saveButton = document.createElement('button');
+            saveButton.textContent = 'Save';
+            saveButton.onclick = () => {
+                const newKey = keyInput.value.trim();
+                const newValue = valueInput.value.trim();
+                
+                if (newKey && newValue) {
+                    updateSetting(newKey, newValue);
+                } else {
+                    showStatus('Both key and value are required', false);
+                }
+            };
+            actionCell.appendChild(saveButton);
+            newRow.appendChild(actionCell);
+            
+            tableBody.appendChild(newRow);
+            keyInput.focus();
+        }
+
+        // Function to create the product table
+        function createProductTable() {
+            const tableBody = document.getElementById('productBody');
+            
+            productsRef.once('value').then((snapshot) => {
+                const products = snapshot.val() || {};
+                
+                // Clear existing rows (except the header)
+                tableBody.innerHTML = '';
+                
+                // Add a row for each product setting
+                Object.keys(products).forEach(key => {
+                    const row = document.createElement('tr');
+                    
+                    // Key cell
+                    const keyCell = document.createElement('td');
+                    keyCell.textContent = key;
+                    row.appendChild(keyCell);
+                    
+                    // Value cell
+                    const valueCell = document.createElement('td');
+                    const valueInput = document.createElement('input');
+                    valueInput.type = 'text';
+                    valueInput.value = products[key];
+                    valueInput.id = `value_${key}`;
+                    valueCell.appendChild(valueInput);
+                    row.appendChild(valueCell);
+                    
+                    // Action cell
+                    const actionCell = document.createElement('td');
+                    
+                    // Update button
+                    const updateButton = document.createElement('button');
+                    updateButton.textContent = 'Save';
+                    updateButton.onclick = () => {
+                        const newValue = valueInput.value;
+                        updateSetting(key, newValue);
+                    };
+                    actionCell.appendChild(updateButton);
+                    
+                    // Delete button
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.style.marginLeft = '5px';
+                    deleteButton.style.backgroundColor = '#e74c3c';
+                    deleteButton.onclick = () => deleteSetting(key);
+                    actionCell.appendChild(deleteButton);
+                    
+                    row.appendChild(actionCell);
+                    tableBody.appendChild(row);
+                });
+            }).catch((error) => {
+                showStatus(`Error loading product settings: ${error.message}`, false);
+            });
+        }
+
+        // Listen for changes in Firebase and update the table
+        productsRef.on('value', (snapshot) => {
+            createProductTable();
+        });
+
+        // Initialize the table when the page loads
+        window.onload = createProductTable;
+    </script>
+</body>
+</html>
