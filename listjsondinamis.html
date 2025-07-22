@@ -1,49 +1,32 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <title>Data PLN Dinamis</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ccc; padding: 8px; }
-    th { background: #eee; }
-  </style>
-</head>
+<head><meta charset="UTF-8"><title>PLN Dinamis</title></head>
 <body>
-  <h2>Produk PLN (Harga Termurah)</h2>
-  <table id="tabelProduk">
-    <thead>
-      <tr>
-        <th>Kode</th>
-        <th>Nama</th>
-        <th>Nominal</th>
-        <th>Harga Jual</th>
-        <th>Aktif</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <table id="tabel"><thead><tr>
+    <th>Kode</th><th>Nama</th><th>Nominal</th><th>Harga Jual</th><th>Aktif</th>
+  </tr></thead><tbody></tbody></table>
 
   <script>
-    fetch("data.json") // Ganti ini dengan URL JSON kakak
-      .then(res => res.json())
-      .then(data => {
-        const tbody = document.querySelector("#tabelProduk tbody");
-        const items = data.result.sort((a, b) => a.harga_jual - b.harga_jual);
+    const params = new URLSearchParams(window.location.search);
+    const urlData = params.get("data");
+    if (!urlData) return alert("Parameter 'data' belum dikirim");
 
-        items.forEach(item => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${item.kode}</td>
-            <td>${item.nama}</td>
-            <td>${item.nominal}</td>
-            <td>Rp ${item.harga_jual.toLocaleString('id-ID')}</td>
-            <td>${item.aktif ? 'Ya' : 'Tidak'}</td>
-          `;
-          tbody.appendChild(row);
-        });
-      });
+    fetch(urlData)
+      .then(r => r.json())
+      .then(d => {
+        d.result
+         .sort((a,b)=>a.harga_jual-b.harga_jual)
+         .forEach(i=>{
+           document.querySelector("#tabel tbody").innerHTML += `
+             <tr>
+               <td>${i.kode}</td><td>${i.nama}</td>
+               <td>${i.nominal}</td>
+               <td>Rp ${i.harga_jual.toLocaleString('id-ID')}</td>
+               <td>${i.aktif?"Ya":"Tidak"}</td>
+             </tr>`;
+         });
+      })
+      .catch(e=>alert("Gagal load JSON: "+e));
   </script>
 </body>
 </html>
