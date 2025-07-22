@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASIAPAYMENT Connection Settings</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .settings-section {
+            margin-bottom: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+        th, td {
+            border: 1px solid #e0e0e0;
+            padding: 12px 15px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 14px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
+        }
+        .save-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .save-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-1px);
+        }
+        .save-btn i {
+            margin-right: 5px;
+        }
+        .status {
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            display: none;
+            font-weight: 500;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+            border-left: 4px solid #28a745;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+            border-left: 4px solid #dc3545;
+        }
+        .security-note {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 12px 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+            font-size: 14px;
+        }
+        .toggle-password {
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .input-container {
+            position: relative;
+        }
+        .key-icon {
+            color: #6c757d;
+            margin-right: 8px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <i class="fas fa-plug"></i> ASIAPAYMENT Connection Settings
+        </h1>
+        
+        <div id="status" class="status"></div>
+        
+        <div class="security-note">
+            <i class="fas fa-lock"></i> <strong>Security Note:</strong> These settings control the connection between ASIAPAYMENT and Otomax. 
+            Be cautious when modifying these values as incorrect settings may disrupt service.
+        </div>
+        
+        <div class="settings-section">
+            <h2><i class="fas fa-server"></i> Connection Configuration</h2>
+            <table id="connectionSettingsTable">
+                <thead>
+                    <tr>
+                        <th width="25%">Parameter</th>
+                        <th width="60%">Value</th>
+                        <th width="15%">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="connectionSettingsBody">
+                    <!-- Table content will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            databaseURL: "https://steady-fin-368617-default-rtdb.firebaseio.com/"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const connectionRef = database.ref('ASIAPAYMENT/setting/ConectionWithOtomaxWithApp');
+
+        // Connection settings keys
+        const connectionSettingKeys = [
+            "IPCenter",
+            "Host",
+            "SenderCallbacks",
+            "AppId",
+            "AppKey",
+            "DevKey"
+        ];
+
+        // Function to show status message
+        function showStatus(message, isSuccess) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<i class="fas ${isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
+            statusDiv.className = isSuccess ? 'status success' : 'status error';
+            
+            // Hide status after 4 seconds
+            setTimeout(() => {
+                statusDiv.className = 'status';
+            }, 4000);
+        }
+
+        // Function to update a setting in Firebase
+        function updateSetting(key, value) {
+            const updates = {};
+            updates[key] = value;
+            
+            connectionRef.update(updates)
+                .then(() => {
+                    showStatus(`Successfully updated ${key}`, true);
+                })
+                .catch((error) => {
+                    showStatus(`Error updating ${key}: ${error.message}`, false);
+                });
+        }
+
+        // Function to toggle password visibility
+        function togglePasswordVisibility(inputId, button) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                button.innerHTML = '<i class="fas fa-eye-slash"></i>';
+            } else {
+                input.type = "password";
+                button.innerHTML = '<i class="fas fa-eye"></i>';
+            }
+        }
+
+        // Function to create input field based on setting type
+        function createInputField(key, value) {
+            const container = document.createElement('div');
+            container.className = 'input-container';
+            
+            if (key === 'AppKey' || key === 'DevKey') {
+                const passInput = document.createElement('input');
+                passInput.type = 'password';
+                passInput.id = `input_${key}`;
+                passInput.value = value || '';
+                passInput.placeholder = `Enter ${key}`;
+                container.appendChild(passInput);
+                
+                const toggleBtn = document.createElement('button');
+                toggleBtn.type = 'button';
+                toggleBtn.className = 'toggle-password';
+                toggleBtn.innerHTML = '<i class="fas fa-eye"></i>';
+                toggleBtn.onclick = () => togglePasswordVisibility(`input_${key}`, toggleBtn);
+                container.appendChild(toggleBtn);
+            } else {
+                const textInput = document.createElement('input');
+                textInput.type = 'text';
+                textInput.id = `input_${key}`;
+                textInput.value = value || '';
+                textInput.placeholder = `Enter ${key}`;
+                container.appendChild(textInput);
+            }
+            
+            return container;
+        }
+
+        // Function to create the settings table
+        function createSettingsTable() {
+            const tableBody = document.getElementById('connectionSettingsBody');
+            
+            connectionRef.once('value').then((snapshot) => {
+                const settings = snapshot.val() || {};
+                
+                connectionSettingKeys.forEach(key => {
+                    const row = document.createElement('tr');
+                    
+                    // Parameter name cell
+                    const nameCell = document.createElement('td');
+                    nameCell.innerHTML = `<i class="fas ${key.includes('Key') ? 'fa-key key-icon' : 'fa-cog key-icon'}"></i> ${key}`;
+                    row.appendChild(nameCell);
+                    
+                    // Value input cell
+                    const valueCell = document.createElement('td');
+                    const inputContainer = createInputField(key, settings[key]);
+                    valueCell.appendChild(inputContainer);
+                    row.appendChild(valueCell);
+                    
+                    // Save button cell
+                    const actionCell = document.createElement('td');
+                    const saveButton = document.createElement('button');
+                    saveButton.className = 'save-btn';
+                    saveButton.innerHTML = '<i class="fas fa-save"></i> Save';
+                    saveButton.onclick = () => {
+                        const newValue = document.getElementById(`input_${key}`).value;
+                        updateSetting(key, newValue);
+                    };
+                    actionCell.appendChild(saveButton);
+                    row.appendChild(actionCell);
+                    
+                    tableBody.appendChild(row);
+                });
+            }).catch((error) => {
+                showStatus(`Error loading connection settings: ${error.message}`, false);
+            });
+        }
+
+        // Initialize the page when loaded
+        window.onload = createSettingsTable;
+    </script>
+</body>
+</html>
