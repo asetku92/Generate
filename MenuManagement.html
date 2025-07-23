@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu & Banner Management</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        /* Banner Styles */
+        .banner-section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .banner-container {
+            position: relative;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 200px;
+            background-color: #f8f9fa;
+        }
+        .banner-slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        .banner-slide.active {
+            opacity: 1;
+        }
+        .banner-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .banner-placeholder {
+            color: #7f8c8d;
+            text-align: center;
+            padding: 20px;
+        }
+        .banner-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .banner-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #ccc;
+            cursor: pointer;
+        }
+        .banner-indicator.active {
+            background-color: #3498db;
+        }
+        .banner-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .banner-form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 120px;
+            gap: 15px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        input[type="text"], input[type="url"], input[type="number"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        /* Category Styles */
+        .category {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .category-header {
+            background: #3498db;
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .category-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .category-name {
+            margin: 0;
+            font-size: 18px;
+        }
+        .category-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .category-content {
+            padding: 15px;
+        }
+        .menu-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .menu-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .menu-icon {
+            font-size: 24px;
+            color: #3498db;
+            width: 40px;
+            text-align: center;
+        }
+        .menu-icon-img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+        .menu-details {
+            flex-grow: 1;
+        }
+        .menu-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        .menu-url {
+            font-size: 13px;
+            color: #7f8c8d;
+            word-break: break-all;
+        }
+        .menu-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        /* Button Styles */
+        .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        .btn-success {
+            background: #2ecc71;
+            color: white;
+        }
+        
+        /* Status Messages */
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        
+        /* Add Category Form */
+        .add-category-form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        .empty-message {
+            padding: 20px;
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        .banner-list {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .banner-list-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .banner-list-item img {
+            width: 80px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .banner-list-details {
+            flex-grow: 1;
+        }
+        .banner-list-actions {
+            display: flex;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Menu & Banner Management</h1>
+        
+        <div id="status" class="status"></div>
+
+        <!-- Banner Management Section -->
+        <div class="banner-section">
+            <h2><i class="fas fa-images"></i> Banner Slideshow</h2>
+            
+            <!-- Slideshow Preview -->
+            <div class="banner-container" id="bannerContainer">
+                <div class="banner-placeholder" id="bannerPlaceholder">
+                    <i class="fas fa-image" style="font-size: 48px; margin-bottom: 10px;"></i>
+                    <p>Belum ada banner yang diatur</p>
+                </div>
+                <!-- Slides will be inserted here by JavaScript -->
+            </div>
+            
+            <div class="banner-controls" id="bannerIndicators">
+                <!-- Indicators will be inserted here by JavaScript -->
+            </div>
+            
+            <!-- Banner Settings Form -->
+            <div class="banner-form">
+                <div class="form-group">
+                    <label for="bannerImageUrl">URL Gambar Banner:</label>
+                    <input type="url" id="bannerImageUrl" placeholder="https://example.com/banner.jpg">
+                </div>
+                <div class="form-group">
+                    <label for="bannerTargetUrl">URL Tujuan (saat diklik):</label>
+                    <input type="url" id="bannerTargetUrl" placeholder="https://example.com/promo">
+                </div>
+                <div class="form-group">
+                    <label for="bannerDuration">Durasi (detik):</label>
+                    <input type="number" id="bannerDuration" placeholder="5" min="1" value="5">
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="addBanner()">
+                <i class="fas fa-plus"></i> Tambah Banner
+            </button>
+            
+            <!-- Banner List -->
+            <div class="banner-list" id="bannerList">
+                <!-- Banner items will be inserted here by JavaScript -->
+            </div>
+            
+            <div class="form-group" style="margin-top: 20px;">
+                <label for="slideshowInterval">Interval Slide (detik):</label>
+                <input type="number" id="slideshowInterval" placeholder="5" min="1" value="5">
+            </div>
+            <button class="btn btn-success" onclick="saveBannerSettings()">
+                <i class="fas fa-save"></i> Simpan Pengaturan Banner
+            </button>
+        </div>
+
+        <!-- Add New Category Form -->
+        <div class="add-category-form">
+            <h2><i class="fas fa-plus-circle"></i> Tambah Kategori Baru</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="newCategoryName">Nama Kategori:</label>
+                    <input type="text" id="newCategoryName" placeholder="Contoh: Produk Game">
+                </div>
+                <div class="form-group">
+                    <label for="newCategoryIcon">Icon Kategori (Font Awesome):</label>
+                    <input type="text" id="newCategoryIcon" placeholder="Contoh: fa-gamepad" value="fa-folder">
+                </div>
+            </div>
+            <button class="btn btn-success" onclick="addNewCategory()">
+                <i class="fas fa-plus"></i> Tambah Kategori
+            </button>
+        </div>
+
+        <!-- Categories will be dynamically inserted here -->
+        <div id="categoriesContainer"></div>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            databaseURL: "https://steady-fin-368617-default-rtdb.firebaseio.com/"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const settingsRef = database.ref('ASIAPAYMENT/setting/MenuDinamis');
+
+        // Global variables for banner slideshow
+        let currentSlide = 0;
+        let slideInterval;
+        let banners = [];
+
+        // Function to show status message
+        function showStatus(message, isSuccess) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = isSuccess ? 'status success' : 'status error';
+            
+            setTimeout(() => {
+                statusDiv.className = 'status';
+            }, 3000);
+        }
+
+        // Initialize banner slideshow
+        function initSlideshow() {
+            const container = document.getElementById('bannerContainer');
+            const indicators = document.getElementById('bannerIndicators');
+            
+            // Clear existing slides and indicators
+            container.innerHTML = '';
+            indicators.innerHTML = '';
+            
+            if (banners.length === 0) {
+                container.innerHTML = `
+                    <div class="banner-placeholder">
+                        <i class="fas fa-image" style="font-size: 48px; margin-bottom: 10px;"></i>
+                        <p>Belum ada banner yang diatur</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Create slides
+            banners.forEach((banner, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'banner-slide';
+                if (index === 0) slide.classList.add('active');
+                
+                const img = document.createElement('img');
+                img.className = 'banner-image';
+                img.src = banner.imageUrl;
+                img.onerror = () => {
+                    img.src = 'https://via.placeholder.com/800x200?text=Banner+Image';
+                };
+                
+                if (banner.targetUrl) {
+                    img.style.cursor = 'pointer';
+                    img.onclick = () => {
+                        window.open(banner.targetUrl, '_blank');
+                    };
+                }
+                
+                slide.appendChild(img);
+                container.appendChild(slide);
+                
+                // Create indicator
+                const indicator = document.createElement('div');
+                indicator.className = 'banner-indicator';
+                if (index === 0) indicator.classList.add('active');
+                indicator.onclick = () => {
+                    goToSlide(index);
+                };
+                indicators.appendChild(indicator);
+            });
+            
+            // Start slideshow
+            startSlideshow();
+        }
+
+        // Start slideshow with current interval
+        function startSlideshow() {
+            clearInterval(slideInterval);
+            
+            const interval = document.getElementById('slideshowInterval').value * 1000 || 5000;
+            
+            slideInterval = setInterval(() => {
+                nextSlide();
+            }, interval);
+        }
+
+        // Go to next slide
+        function nextSlide() {
+            const slides = document.querySelectorAll('.banner-slide');
+            const indicators = document.querySelectorAll('.banner-indicator');
+            
+            if (slides.length === 0) return;
+            
+            slides[currentSlide].classList.remove('active');
+            indicators[currentSlide].classList.remove('active');
+            
+            currentSlide = (currentSlide + 1) % slides.length;
+            
+            slides[currentSlide].classList.add('active');
+            indicators[currentSlide].classList.add('active');
+        }
+
+        // Go to specific slide
+        function goToSlide(index) {
+            const slides = document.querySelectorAll('.banner-slide');
+            const indicators = document.querySelectorAll('.banner-indicator');
+            
+            if (slides.length === 0 || index < 0 || index >= slides.length) return;
+            
+            slides[currentSlide].classList.remove('active');
+            indicators[currentSlide].classList.remove('active');
+            
+            currentSlide = index;
+            
+            slides[currentSlide].classList.add('active');
+            indicators[currentSlide].classList.add('active');
+            
+            // Reset interval timer
+            startSlideshow();
+        }
+
+        // Render banner list for management
+        function renderBannerList() {
+            const listContainer = document.getElementById('bannerList');
+            listContainer.innerHTML = '';
+            
+            if (banners.length === 0) {
+                listContainer.innerHTML = '<div class="empty-message">Belum ada banner yang ditambahkan</div>';
+                return;
+            }
+            
+            banners.forEach((banner, index) => {
+                const item = document.createElement('div');
+                item.className = 'banner-list-item';
+                
+                item.innerHTML = `
+                    <img src="${banner.imageUrl}" onerror="this.src='https://via.placeholder.com/80x50?text=Banner'">
+                    <div class="banner-list-details">
+                        <div><strong>URL:</strong> ${banner.imageUrl}</div>
+                        <div><strong>Target:</strong> ${banner.targetUrl || '-'}</div>
+                        <div><strong>Durasi:</strong> ${banner.duration} detik</div>
+                    </div>
+                    <div class="banner-list-actions">
+                        <button class="btn btn-danger btn-sm" onclick="removeBanner(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                listContainer.appendChild(item);
+            });
+        }
+
+        // Add new banner
+        function addBanner() {
+            const imageUrl = document.getElementById('bannerImageUrl').value.trim();
+            const targetUrl = document.getElementById('bannerTargetUrl').value.trim();
+            const duration = document.getElementById('bannerDuration').value || 5;
+            
+            if (!imageUrl) {
+                showStatus('URL gambar banner harus diisi', false);
+                return;
+            }
+            
+            banners.push({
+                imageUrl: imageUrl,
+                targetUrl: targetUrl,
+                duration: duration
+            });
+            
+            // Clear form
+            document.getElementById('bannerImageUrl').value = '';
+            document.getElementById('bannerTargetUrl').value = '';
+            
+            // Update display
+            renderBannerList();
+            initSlideshow();
+            
+            showStatus('Banner berhasil ditambahkan', true);
+        }
+
+        // Remove banner
+        function removeBanner(index) {
+            if (confirm('Apakah Anda yakin ingin menghapus banner ini?')) {
+                banners.splice(index, 1);
+                renderBannerList();
+                initSlideshow();
+                showStatus('Banner berhasil dihapus', true);
+            }
+        }
+
+        // Save banner settings to Firebase
+        function saveBannerSettings() {
+            const interval = document.getElementById('slideshowInterval').value || 5;
+            
+            const settings = {
+                banners: banners,
+                interval: interval
+            };
+            
+            settingsRef.child('banners').set(settings)
+                .then(() => {
+                    showStatus('Pengaturan banner berhasil disimpan', true);
+                })
+                .catch((error) => {
+                    showStatus(`Gagal menyimpan banner: ${error.message}`, false);
+                });
+        }
+
+        // Load banner settings from Firebase
+        function loadBannerSettings() {
+            settingsRef.child('banners').once('value')
+                .then((snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        banners = data.banners || [];
+                        document.getElementById('slideshowInterval').value = data.interval || 5;
+                        
+                        renderBannerList();
+                        initSlideshow();
+                    }
+                });
+        }
+
+        // Add new category
+        function addNewCategory() {
+            const nameInput = document.getElementById('newCategoryName');
+            const iconInput = document.getElementById('newCategoryIcon');
+            
+            const name = nameInput.value.trim();
+            const icon = iconInput.value.trim();
+            
+            if (!name) {
+                showStatus('Nama kategori harus diisi', false);
+                return;
+            }
+            
+            // Add to Firebase
+            settingsRef.child('categories').child(name).set(icon)
+                .then(() => {
+                    showStatus(`Kategori ${name} berhasil ditambahkan`, true);
+                    nameInput.value = '';
+                    iconInput.value = 'fa-folder';
+                })
+                .catch((error) => {
+                    showStatus(`Gagal menambahkan kategori: ${error.message}`, false);
+                });
+        }
+
+        // Delete category
+        function deleteCategory(category) {
+            if (confirm(`Apakah Anda yakin ingin menghapus kategori ${category} dan semua menunya?`)) {
+                // Delete both the category and its menu items
+                const updates = {};
+                updates[`categories/${category}`] = null;
+                updates[`menu/${category}`] = null;
+                
+                settingsRef.update(updates)
+                    .then(() => {
+                        showStatus(`Kategori ${category} berhasil dihapus`, true);
+                    })
+                    .catch((error) => {
+                        showStatus(`Gagal menghapus kategori: ${error.message}`, false);
+                    });
+            }
+        }
+
+        // Edit category name
+        function editCategory(oldName, newName, icon) {
+            if (!newName.trim()) {
+                showStatus('Nama kategori tidak boleh kosong', false);
+                return;
+            }
+            
+            if (oldName === newName) {
+                // Only update icon if name didn't change
+                settingsRef.child('categories').child(oldName).set(icon)
+                    .then(() => {
+                        showStatus(`Icon kategori diperbarui`, true);
+                    })
+                    .catch((error) => {
+                        showStatus(`Gagal memperbarui kategori: ${error.message}`, false);
+                    });
+                return;
+            }
+            
+            // First check if new name already exists
+            settingsRef.child('categories').child(newName).once('value')
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        showStatus('Kategori dengan nama tersebut sudah ada', false);
+                        return Promise.reject('Category already exists');
+                    }
+                    
+                    // Get all items from old category
+                    return settingsRef.child('menu').child(oldName).once('value');
+                })
+                .then((itemsSnapshot) => {
+                    const items = itemsSnapshot.val() || {};
+                    const updates = {};
+                    
+                    // Prepare updates for category rename
+                    updates[`categories/${oldName}`] = null;
+                    updates[`categories/${newName}`] = icon;
+                    updates[`menu/${oldName}`] = null;
+                    updates[`menu/${newName}`] = items;
+                    
+                    // Execute all updates at once
+                    return settingsRef.update(updates);
+                })
+                .then(() => {
+                    showStatus(`Kategori berhasil diubah dari ${oldName} ke ${newName}`, true);
+                })
+                .catch((error) => {
+                    if (error !== 'Category already exists') {
+                        showStatus(`Gagal mengubah kategori: ${error.message}`, false);
+                    }
+                });
+        }
+
+        // Add new menu item
+        function addMenuItem(category) {
+            const name = prompt("Masukkan nama menu:");
+            if (!name) return;
+            
+            const url = prompt("Masukkan URL icon untuk menu ini:");
+            if (!url) return;
+            
+            // Add to Firebase
+            settingsRef.child('menu').child(category).child(name).set(url)
+                .then(() => {
+                    showStatus(`Menu ${name} berhasil ditambahkan ke ${category}`, true);
+                })
+                .catch((error) => {
+                    showStatus(`Gagal menambahkan menu: ${error.message}`, false);
+                });
+        }
+
+        // Edit menu item
+        function editMenuItem(category, oldName, currentUrl) {
+            const newName = prompt("Edit nama menu:", oldName);
+            if (!newName) return;
+            
+            const newUrl = prompt("Edit URL icon:", currentUrl);
+            if (!newUrl) return;
+            
+            if (oldName === newName) {
+                // Just update the URL
+                settingsRef.child('menu').child(category).child(oldName).set(newUrl)
+                    .then(() => {
+                        showStatus(`Menu ${oldName} berhasil diperbarui`, true);
+                    })
+                    .catch((error) => {
+                        showStatus(`Gagal memperbarui menu: ${error.message}`, false);
+                    });
+            } else {
+                // Need to create new and delete old
+                const updates = {};
+                updates[`menu/${category}/${newName}`] = newUrl;
+                updates[`menu/${category}/${oldName}`] = null;
+                
+                settingsRef.update(updates)
+                    .then(() => {
+                        showStatus(`Menu berhasil diubah dari ${oldName} ke ${newName}`, true);
+                    })
+                    .catch((error) => {
+                        showStatus(`Gagal mengubah menu: ${error.message}`, false);
+                    });
+            }
+        }
+
+        // Delete menu item
+        function deleteMenuItem(category, name) {
+            if (confirm(`Apakah Anda yakin ingin menghapus menu ${name}?`)) {
+                settingsRef.child('menu').child(category).child(name).remove()
+                    .then(() => {
+                        showStatus(`Menu ${name} berhasil dihapus`, true);
+                    })
+                    .catch((error) => {
+                        showStatus(`Gagal menghapus menu: ${error.message}`, false);
+                    });
+            }
+        }
+
+        // Render all categories and their menu items
+        function renderCategories(categoriesData, menuData) {
+            const container = document.getElementById('categoriesContainer');
+            container.innerHTML = '';
+            
+            if (!categoriesData || Object.keys(categoriesData).length === 0) {
+                container.innerHTML = '<div class="empty-message">Belum ada kategori. Tambahkan kategori baru menggunakan form di atas.</div>';
+                return;
+            }
+            
+            Object.keys(categoriesData).forEach(category => {
+                const categoryIcon = categoriesData[category] || 'fa-folder';
+                const categoryItems = menuData?.[category] || {};
+                
+                const categoryElement = document.createElement('div');
+                categoryElement.className = 'category';
+                
+                // Category header
+                categoryElement.innerHTML = `
+                    <div class="category-header">
+                        <div class="category-title">
+                            <i class="fas ${categoryIcon}"></i>
+                            <h3 class="category-name">${category}</h3>
+                        </div>
+                        <div class="category-actions">
+                            <button class="btn btn-primary btn-sm" onclick="startEditCategory('${category}')">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteCategory('${category}')">
+                                <i class="fas fa-trash"></i> Hapus
+                            </button>
+                        </div>
+                    </div>
+                    <div class="category-content">
+                        <button class="btn btn-primary" onclick="addMenuItem('${category}')">
+                            <i class="fas fa-plus"></i> Tambah Menu
+                        </button>
+                        <div class="menu-list" id="${category.replace(/\s+/g, '-')}-menu"></div>
+                    </div>
+                `;
+                
+                container.appendChild(categoryElement);
+                
+                // Render menu items for this category
+                renderMenuItems(category, categoryItems);
+            });
+        }
+
+        // Start editing a category
+        function startEditCategory(currentName) {
+            settingsRef.child('categories').child(currentName).once('value')
+                .then((snapshot) => {
+                    const currentIcon = snapshot.val() || 'fa-folder';
+                    
+                    const newName = prompt("Edit nama kategori:", currentName);
+                    if (newName === null) return;
+                    
+                    const newIcon = prompt("Edit icon kategori:", currentIcon);
+                    
+                    editCategory(currentName, newName.trim(), newIcon || currentIcon);
+                });
+        }
+
+        // Render menu items for a category
+        function renderMenuItems(category, items) {
+            const menuContainer = document.getElementById(`${category.replace(/\s+/g, '-')}-menu`);
+            if (!menuContainer) return;
+            
+            menuContainer.innerHTML = '';
+            
+            if (!items || Object.keys(items).length === 0) {
+                menuContainer.innerHTML = '<div class="empty-message">Belum ada menu dalam kategori ini</div>';
+                return;
+            }
+            
+            Object.keys(items).forEach(name => {
+                const url = items[name];
+                
+                const menuItem = document.createElement('div');
+                menuItem.className = 'menu-item';
+                
+                // Icon
+                if (url.startsWith('http')) {
+                    menuItem.innerHTML = `
+                        <img src="${url}" class="menu-icon-img" onerror="this.src='https://via.placeholder.com/40'">
+                    `;
+                } else if (url.startsWith('fa-')) {
+                    menuItem.innerHTML = `<i class="fas ${url} menu-icon"></i>`;
+                } else {
+                    menuItem.innerHTML = `<i class="fas fa-link menu-icon"></i>`;
+                }
+                
+                // Details
+                const detailsDiv = document.createElement('div');
+                detailsDiv.className = 'menu-details';
+                detailsDiv.innerHTML = `
+                    <div class="menu-name">${name}</div>
+                    <div class="menu-url">${url}</div>
+                `;
+                menuItem.appendChild(detailsDiv);
+                
+                // Actions
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'menu-actions';
+                actionsDiv.innerHTML = `
+                    <button class="btn btn-primary btn-sm" onclick="editMenuItem('${category}', '${name}', '${url}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteMenuItem('${category}', '${name}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                menuItem.appendChild(actionsDiv);
+                
+                menuContainer.appendChild(menuItem);
+            });
+        }
+
+        // Initialize the page
+        window.onload = () => {
+            // Load banner settings
+            loadBannerSettings();
+            
+            // Load categories and menu items
+            settingsRef.on('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                renderCategories(data.categories || {}, data.menu || {});
+            });
+        };
+    </script>
+</body>
+</html>
