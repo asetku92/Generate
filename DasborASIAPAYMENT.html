@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASIAPAYMENT Management Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .dashboard-header {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-bottom: 5px solid var(--primary-color);
+        }
+        
+        .dashboard-title {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .dashboard-subtitle {
+            font-weight: 300;
+            opacity: 0.9;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+        
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+        
+        .card-text {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .btn-dashboard {
+            padding: 0.5rem 1.25rem;
+            border-radius: 50px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .footer {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 1.5rem 0;
+            margin-top: 3rem;
+        }
+        
+        .management-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            color: var(--secondary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Dashboard Header -->
+    <header class="dashboard-header text-center">
+        <div class="container">
+            <h1 class="dashboard-title">
+                <i class="fas fa-cogs me-2"></i>ASIAPAYMENT Management Dashboard
+            </h1>
+            <p class="dashboard-subtitle">
+                Centralized control panel for all ASIAPAYMENT settings and configurations
+            </p>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Content -->
+    <div class="container">
+        <!-- Menu Management Section -->
+        <div class="management-section">
+            <h2 class="section-title">
+                <i class="fas fa-bars me-2"></i>Menu & Banner Management
+            </h2>
+            <div class="row">
+                <div class="col-md-8">
+                    <p class="lead">
+                        Manage dynamic menus, banners, and application navigation structure.
+                    </p>
+                    <p>
+                        Configure menu items, categories, and promotional banners that appear in your application.
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="https://asetku92.github.io/Generate/MenuManagement.html" 
+                       class="btn btn-primary btn-dashboard">
+                        <i class="fas fa-external-link-alt me-2"></i>Open Menu Management
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Management Section -->
+        <div class="management-section">
+            <h2 class="section-title">
+                <i class="fas fa-mobile-alt me-2"></i>Telkomsel Product Management
+            </h2>
+            <div class="row">
+                <div class="col-md-8">
+                    <p class="lead">
+                        Configure all Telkomsel products including pulsa, data packages, and promotions.
+                    </p>
+                    <p>
+                        Add, edit, or remove products from various categories with their corresponding codes.
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="https://asetku92.github.io/Generate/TelkomselProductSettings.html" 
+                       class="btn btn-success btn-dashboard">
+                        <i class="fas fa-external-link-alt me-2"></i>Open Product Management
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Application Settings Section -->
+        <div class="management-section">
+            <h2 class="section-title">
+                <i class="fas fa-sliders-h me-2"></i>Application Settings
+            </h2>
+            <div class="row">
+                <div class="col-md-8">
+                    <p class="lead">
+                        Configure general application settings and branding.
+                    </p>
+                    <p>
+                        Set application name, logo, colors, background images, and other visual elements.
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="https://asetku92.github.io/Generate/ASIAPAYMENTApplicationSettings.html" 
+                       class="btn btn-info btn-dashboard">
+                        <i class="fas fa-external-link-alt me-2"></i>Open App Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Connection Settings Section -->
+        <div class="management-section">
+            <h2 class="section-title">
+                <i class="fas fa-plug me-2"></i>Connection Settings
+            </h2>
+            <div class="row">
+                <div class="col-md-8">
+                    <p class="lead">
+                        Manage critical connection parameters and API configurations.
+                    </p>
+                    <p class="text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Warning:</strong> These settings affect system connectivity. Modify with caution.
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="https://asetku92.github.io/Generate/ASIAPAYMENTSettings.html" 
+                       class="btn btn-warning btn-dashboard">
+                        <i class="fas fa-external-link-alt me-2"></i>Open Connection Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Access Cards -->
+        <div class="row mt-4">
+            <div class="col-md-3 mb-4">
+                <div class="card text-center p-4">
+                    <i class="fas fa-bars card-icon"></i>
+                    <h5 class="card-title">Menu Management</h5>
+                    <p class="card-text">Configure navigation and banners</p>
+                    <a href="https://asetku92.github.io/Generate/MenuManagement.html" 
+                       class="btn btn-outline-primary btn-sm">Access</a>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card text-center p-4">
+                    <i class="fas fa-mobile-alt card-icon"></i>
+                    <h5 class="card-title">Telkomsel Products</h5>
+                    <p class="card-text">Manage all Telkomsel products</p>
+                    <a href="https://asetku92.github.io/Generate/TelkomselProductSettings.html" 
+                       class="btn btn-outline-success btn-sm">Access</a>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card text-center p-4">
+                    <i class="fas fa-sliders-h card-icon"></i>
+                    <h5 class="card-title">App Settings</h5>
+                    <p class="card-text">Configure branding and visuals</p>
+                    <a href="https://asetku92.github.io/Generate/ASIAPAYMENTApplicationSettings.html" 
+                       class="btn btn-outline-info btn-sm">Access</a>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card text-center p-4">
+                    <i class="fas fa-plug card-icon"></i>
+                    <h5 class="card-title">Connections</h5>
+                    <p class="card-text">Manage system connections</p>
+                    <a href="https://asetku92.github.io/Generate/ASIAPAYMENTSettings.html" 
+                       class="btn btn-outline-warning btn-sm">Access</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer text-center">
+        <div class="container">
+            <p class="mb-0">
+                <strong>ASIAPAYMENT Management System</strong> | 
+                <span id="current-year"></span> | 
+                Version 1.0.0
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Set current year in footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        // You can add additional JavaScript functionality here if needed
+    </script>
+</body>
+</html>
