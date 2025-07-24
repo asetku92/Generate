@@ -195,6 +195,15 @@
                             <button class="save-btn" onclick="saveCustomerServiceSettings()">Save</button>
                         </td>
                     </tr>
+                    <tr>
+                        <td>Terms & Conditions URL</td>
+                        <td>
+                            <input type="url" id="termsConditionsUrl" placeholder="https://example.com/terms">
+                        </td>
+                        <td>
+                            <button class="save-btn" onclick="saveCustomerServiceSettings()">Save</button>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -253,10 +262,12 @@
         function saveCustomerServiceSettings() {
             const whatsappNumber = document.getElementById('whatsappNumber').value;
             const customerServiceEmail = document.getElementById('customerServiceEmail').value;
+            const termsConditionsUrl = document.getElementById('termsConditionsUrl').value;
             
             const updates = {
                 whatsappNumber: whatsappNumber,
-                email: customerServiceEmail
+                email: customerServiceEmail,
+                termsConditionsUrl: termsConditionsUrl
             };
             
             csSettingsRef.update(updates)
@@ -393,6 +404,7 @@
                 const csSettings = snapshot.val() || {};
                 document.getElementById('whatsappNumber').value = csSettings.whatsappNumber || '';
                 document.getElementById('customerServiceEmail').value = csSettings.email || '';
+                document.getElementById('termsConditionsUrl').value = csSettings.termsConditionsUrl || '';
             });
         }
 
