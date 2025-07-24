@@ -3,46 +3,83 @@
 <head>
     <title>Konversi HEX ke ARGB</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        input, button { padding: 8px; margin-top: 10px; }
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            max-width: 600px; 
+            margin: 0 auto; 
+        }
+        input, button { 
+            padding: 8px; 
+            margin-top: 10px; 
+        }
         #colorPreview {
             width: 100px;
             height: 100px;
             margin-top: 20px;
             border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .input-group { 
+            margin-bottom: 15px; 
+        }
+        label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: bold; 
         }
     </style>
 </head>
 <body>
     <h2>Konversi HEX ke ARGB</h2>
-    <input type="text" id="hexInput" placeholder="#RRGGBB" />
-    <button onclick="convert()">Konversi</button>
-    <p id="argbResult"></p>
-    <p id="intResult"></p>
+    
+    <div class="input-group">
+        <label for="hexInput">Masukkan kode warna HEX:</label>
+        <input type="text" id="hexInput" placeholder="#RRGGBB atau RRGGBB" />
+        <button onclick="convert()">Konversi</button>
+    </div>
+    
+    <div class="result-group">
+        <p id="argbResult">ARGB: </p>
+        <p id="intResult">Integer: </p>
+    </div>
+    
     <div id="colorPreview"></div>
 
     <script>
         function convert() {
-            let hex = document.getElementById("hexInput").value;
+            let hex = document.getElementById("hexInput").value.trim();
             if (hex.startsWith("#")) hex = hex.substring(1);
 
-            if (hex.length !== 6) {
-                alert("Masukkan kode hex 6 digit seperti #FF00FF");
+            // Validasi hex code
+            if (!/^[0-9A-Fa-f]{6}$/.test(hex)) {
+                alert("Masukkan kode hex 6 digit yang valid (contoh: FF00FF atau #FF00FF)");
                 return;
             }
 
+            // Konversi HEX ke RGB
             const r = parseInt(hex.substring(0, 2), 16);
             const g = parseInt(hex.substring(2, 4), 16);
             const b = parseInt(hex.substring(4, 6), 16);
             const a = 255;
 
+            // Hasilkan nilai ARGB dan Integer
             const argb = `(${a}, ${r}, ${g}, ${b})`;
             const intVal = (a << 24) | (r << 16) | (g << 8) | b;
             const intUnsigned = intVal >>> 0;
 
+            // Update hasil
             document.getElementById("argbResult").innerText = `ARGB: ${argb}`;
             document.getElementById("intResult").innerText = `Integer: ${intUnsigned}`;
-            document.getElementById("colorPreview").style.backgroundColor = "#" + hex;
+
+            // PREVIEW DARI INTEGER (Konversi balik integer ke RGB)
+            const previewA = (intUnsigned >>> 24) & 0xFF;
+            const previewR = (intUnsigned >>> 16) & 0xFF;
+            const previewG = (intUnsigned >>> 8) & 0xFF;
+            const previewB = intUnsigned & 0xFF;
+            
+            document.getElementById("colorPreview").style.backgroundColor = 
+                `rgb(${previewR}, ${previewG}, ${previewB})`;
         }
     </script>
 </body>
