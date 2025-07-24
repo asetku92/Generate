@@ -8,15 +8,62 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* [Previous CSS remains the same until .color-input] */
-        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .settings-section {
+            margin-bottom: 30px;
+        }
+        .settings-section h2 {
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        input[type="text"], input[type="url"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
         .color-input {
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-        .color-input input[type="text"] {
-            flex: 1;
         }
         .rgb-inputs {
             display: flex;
@@ -39,77 +86,335 @@
             border: 1px solid #ddd;
             border-radius: 4px;
         }
-        
-        /* [Rest of previous CSS remains the same] */
+        .save-btn {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        .save-btn:hover {
+            background-color: #27ae60;
+        }
+        .preview-area {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px dashed #ddd;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .logo-preview {
+            max-width: 200px;
+            max-height: 100px;
+            margin-bottom: 10px;
+        }
+        .bg-preview {
+            max-width: 100%;
+            max-height: 150px;
+            margin-bottom: 10px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        #appNamePreview {
+            color: var(--app-name-color, rgb(44, 62, 80));
+        }
+        #appTaglinePreview {
+            color: var(--tagline-color, rgb(127, 140, 141));
+        }
+        .preview-button {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 5px;
+            background-color: var(--button-color, rgb(52, 152, 219));
+            color: white;
+            border-radius: 4px;
+        }
+        .preview-secondary-button {
+            background-color: var(--secondary-button, rgb(46, 204, 113));
+        }
     </style>
 </head>
 <body>
-    <!-- [Previous HTML structure remains the same until color settings table] -->
-    
-    <div class="settings-section">
-        <h2>Color Settings (RGB Format)</h2>
-        <table id="colorSettingsTable">
-            <thead>
-                <tr>
-                    <th width="25%">Element</th>
-                    <th width="55%">RGB Color Value</th>
-                    <th width="20%">Action</th>
-                </tr>
-            </thead>
-            <tbody id="colorSettingsBody">
-                <!-- Color settings will be added here -->
-            </tbody>
-        </table>
+    <div class="container">
+        <h1>ASIAPAYMENT Application Settings</h1>
+        
+        <div id="status" class="status"></div>
+        
+        <div class="settings-section">
+            <h2>General Application Settings</h2>
+            <table id="appSettingsTable">
+                <thead>
+                    <tr>
+                        <th width="25%">Setting</th>
+                        <th width="55%">Value</th>
+                        <th width="20%">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="appSettingsBody">
+                    <!-- Table content will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="settings-section">
+            <h2>Color Settings (RGB Format)</h2>
+            <table id="colorSettingsTable">
+                <thead>
+                    <tr>
+                        <th width="25%">Element</th>
+                        <th width="55%">RGB Color Value</th>
+                        <th width="20%">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="colorSettingsBody">
+                    <!-- Color settings will be added here -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="preview-area">
+            <h3>Application Preview</h3>
+            <div id="logoPreviewContainer">
+                <img id="logoPreview" class="logo-preview" src="" alt="Logo Preview">
+            </div>
+            <div id="bgPreviewContainer" style="display: none;">
+                <img id="bgPreview" class="bg-preview" src="" alt="Background Preview">
+            </div>
+            <div id="appInfoPreview">
+                <h2 id="appNamePreview">Application Name</h2>
+                <p id="appTaglinePreview">Tagline will appear here</p>
+                <div>
+                    <span class="preview-button">Primary Button</span>
+                    <span class="preview-button preview-secondary-button">Secondary Button</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-section customer-service-section">
+            <h2>Customer Service Settings</h2>
+            <table class="cs-table">
+                <thead>
+                    <tr>
+                        <th width="25%">Setting</th>
+                        <th width="55%">Value</th>
+                        <th width="20%">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>WhatsApp Number</td>
+                        <td>
+                            <input type="text" id="whatsappNumber" placeholder="6281234567890">
+                        </td>
+                        <td>
+                            <button class="save-btn" onclick="saveCustomerServiceSettings()">Save</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Customer Service Email</td>
+                        <td>
+                            <input type="text" id="customerServiceEmail" placeholder="support@asiapayment.com">
+                        </td>
+                        <td>
+                            <button class="save-btn" onclick="saveCustomerServiceSettings()">Save</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Terms & Conditions URL</td>
+                        <td>
+                            <input type="url" id="termsConditionsUrl" placeholder="https://example.com/terms">
+                        </td>
+                        <td>
+                            <button class="save-btn" onclick="saveCustomerServiceSettings()">Save</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <!-- [Rest of previous HTML remains the same] -->
-
     <script>
-        // [Previous Firebase configuration remains the same]
+        // Firebase configuration
+        const firebaseConfig = {
+            databaseURL: "https://steady-fin-368617-default-rtdb.firebaseio.com/"
+        };
 
-        // Color settings configuration - now with RGB defaults
-        const colorSettings = [
-            { key: "appNameColor", name: "App Name Color", cssVar: "--app-name-color", default: "44, 62, 80" },       // #2c3e50
-            { key: "taglineColor", name: "Tagline Color", cssVar: "--tagline-color", default: "127, 140, 141" },      // #7f8c8d
-            { key: "buttonColor", name: "Primary Button", cssVar: "--button-color", default: "52, 152, 219" },        // #3498db
-            { key: "secondaryButton", name: "Secondary Button", cssVar: "--secondary-button", default: "46, 204, 113" }, // #2ecc71
-            { key: "textColor", name: "Text Color", cssVar: "--text-color", default: "51, 51, 51" }                   // #333333
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const settingsRef = database.ref('ASIAPAYMENT/setting/Lain2');
+        const colorSettingsRef = database.ref('ASIAPAYMENT/setting/Colors');
+        const csSettingsRef = database.ref('ASIAPAYMENT/setting/CustomerService');
+
+        // Application settings keys
+        const appSettingKeys = [
+            "NamaAplikasi",
+            "LogoAplikasi",
+            "TagLine",
+            "WarnaBackground",
+            "ImageBackground",
+            "AlamatServer"
         ];
 
-        // Helper functions for RGB conversion and validation
-        function hexToRgb(hex) {
-            // Remove # if present
-            hex = hex.replace('#', '');
-            
-            // Parse r, g, b values
-            const r = parseInt(hex.substring(0, 2), 16);
-            const g = parseInt(hex.substring(2, 4), 16);
-            const b = parseInt(hex.substring(4, 6), 16);
-            
-            return `${r}, ${g}, ${b}`;
+        // Color settings configuration with RGB defaults
+        const colorSettings = [
+            { key: "appNameColor", name: "App Name Color", cssVar: "--app-name-color", default: "44, 62, 80" },
+            { key: "taglineColor", name: "Tagline Color", cssVar: "--tagline-color", default: "127, 140, 141" },
+            { key: "buttonColor", name: "Primary Button", cssVar: "--button-color", default: "52, 152, 219" },
+            { key: "secondaryButton", name: "Secondary Button", cssVar: "--secondary-button", default: "46, 204, 113" },
+            { key: "textColor", name: "Text Color", cssVar: "--text-color", default: "51, 51, 51" }
+        ];
+
+        // Fungsi konversi warna RGB ke format Android (integer signed)
+        function rgbToAndroidColor(r, g, b) {
+            return -((r << 16) | (g << 8) | b);
         }
 
-        function rgbToHex(rgb) {
-            // Extract r, g, b values
-            const [r, g, b] = rgb.split(',').map(val => parseInt(val.trim()));
+        // Fungsi konversi dari format Android ke string RGB
+        function androidColorToRgb(androidColor) {
+            const colorValue = -androidColor; // hilangkan tanda negatif
+            const r = (colorValue >> 16) & 0xff; // ambil komponen merah
+            const g = (colorValue >> 8) & 0xff;  // ambil komponen hijau
+            const b = colorValue & 0xff;         // ambil komponen biru
+            return `${r}, ${g}, ${b}`; // hasilkan string RGB
+        }
+
+        // Function to show status message
+        function showStatus(message, isSuccess) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = isSuccess ? 'status success' : 'status error';
             
-            // Convert to hex
-            const toHex = (c) => {
-                const hex = c.toString(16);
-                return hex.length === 1 ? "0" + hex : hex;
+            setTimeout(() => {
+                statusDiv.className = 'status';
+            }, 3000);
+        }
+
+        // Function to update a setting in Firebase
+        function updateSetting(key, value) {
+            const updates = {};
+            updates[key] = value;
+            
+            settingsRef.update(updates)
+                .then(() => {
+                    showStatus(`Successfully updated ${key}`, true);
+                    updatePreview();
+                })
+                .catch((error) => {
+                    showStatus(`Error updating ${key}: ${error.message}`, false);
+                });
+        }
+
+        // Function to update color settings in Firebase
+        function updateColorSetting(key, value) {
+            // Convert RGB string to Android signed integer
+            const [r, g, b] = value.split(',').map(v => parseInt(v.trim()));
+            const androidColor = rgbToAndroidColor(r, g, b);
+            
+            const updates = {};
+            updates[key] = androidColor;
+            
+            colorSettingsRef.update(updates)
+                .then(() => {
+                    showStatus(`Successfully updated ${key} color`, true);
+                    applyColorSettings();
+                })
+                .catch((error) => {
+                    showStatus(`Error updating color: ${error.message}`, false);
+                });
+        }
+
+        // Function to save customer service settings
+        function saveCustomerServiceSettings() {
+            const whatsappNumber = document.getElementById('whatsappNumber').value;
+            const customerServiceEmail = document.getElementById('customerServiceEmail').value;
+            const termsConditionsUrl = document.getElementById('termsConditionsUrl').value;
+            
+            const updates = {
+                whatsappNumber: whatsappNumber,
+                email: customerServiceEmail,
+                termsConditionsUrl: termsConditionsUrl
             };
             
-            return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+            csSettingsRef.update(updates)
+                .then(() => {
+                    showStatus('Customer service settings saved successfully', true);
+                })
+                .catch((error) => {
+                    showStatus(`Error saving customer service settings: ${error.message}`, false);
+                });
         }
 
-        function isValidRgb(rgb) {
-            const regex = /^\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*$/;
-            if (!regex.test(rgb)) return false;
-            
-            const [r, g, b] = rgb.split(',').map(val => parseInt(val.trim()));
-            return r >= 0 && r <= 255 && 
-                   g >= 0 && g <= 255 && 
-                   b >= 0 && b <= 255;
+        // Function to update the preview section
+        function updatePreview() {
+            settingsRef.once('value').then((snapshot) => {
+                const settings = snapshot.val() || {};
+                
+                if (settings.LogoAplikasi) {
+                    document.getElementById('logoPreview').src = settings.LogoAplikasi;
+                    document.getElementById('logoPreviewContainer').style.display = 'block';
+                } else {
+                    document.getElementById('logoPreviewContainer').style.display = 'none';
+                }
+                
+                if (settings.ImageBackground) {
+                    document.getElementById('bgPreview').src = settings.ImageBackground;
+                    document.getElementById('bgPreviewContainer').style.display = 'block';
+                } else {
+                    document.getElementById('bgPreviewContainer').style.display = 'none';
+                }
+                
+                if (settings.NamaAplikasi) {
+                    document.getElementById('appNamePreview').textContent = settings.NamaAplikasi;
+                }
+                if (settings.TagLine) {
+                    document.getElementById('appTaglinePreview').textContent = settings.TagLine;
+                }
+                
+                if (settings.WarnaBackground) {
+                    document.body.style.backgroundColor = `rgb(${settings.WarnaBackground})`;
+                }
+            });
+        }
+
+        // Function to apply color settings
+        function applyColorSettings() {
+            colorSettingsRef.once('value').then((snapshot) => {
+                const colors = snapshot.val() || {};
+                
+                colorSettings.forEach(setting => {
+                    let rgbValue;
+                    if (typeof colors[setting.key] === 'number') {
+                        // Convert from Android signed integer to RGB string
+                        rgbValue = androidColorToRgb(colors[setting.key]);
+                    } else {
+                        // Use default or existing RGB string
+                        rgbValue = colors[setting.key] || setting.default;
+                    }
+                    
+                    document.documentElement.style.setProperty(
+                        setting.cssVar, 
+                        `rgb(${rgbValue})`
+                    );
+                });
+            });
         }
 
         // Function to create RGB input field
@@ -117,8 +422,16 @@
             const container = document.createElement('div');
             container.className = 'color-input';
             
-            // Parse current RGB value or use default
-            let [r, g, b] = (value || setting.default).split(',').map(v => parseInt(v.trim()));
+            // Handle both Android integer and RGB string formats
+            let r, g, b;
+            if (typeof value === 'number') {
+                // Convert Android color to RGB
+                const rgbStr = androidColorToRgb(value);
+                [r, g, b] = rgbStr.split(',').map(v => parseInt(v.trim()));
+            } else {
+                // Use RGB string directly
+                [r, g, b] = (value || setting.default).split(',').map(v => parseInt(v.trim()));
+            }
             
             // Create RGB text inputs
             const rgbInputs = document.createElement('div');
@@ -207,7 +520,7 @@
                 return `${r}, ${g}, ${b}`;
             };
             
-            // Event listeners for text inputs
+            // Event listeners
             [rInput, gInput, bInput].forEach(input => {
                 input.addEventListener('input', () => {
                     const rgbString = updateColor();
@@ -215,7 +528,6 @@
                 });
             });
             
-            // Event listeners for sliders
             [rSlider, gSlider, bSlider].forEach(slider => {
                 slider.addEventListener('input', () => {
                     const channel = slider.dataset.channel;
@@ -241,22 +553,89 @@
             return container;
         }
 
-        // Modified applyColorSettings function for RGB
-        function applyColorSettings() {
-            colorSettingsRef.once('value').then((snapshot) => {
-                const colors = snapshot.val() || {};
+        // Function to create the settings table
+        function createSettingsTable() {
+            const tableBody = document.getElementById('appSettingsBody');
+            
+            settingsRef.once('value').then((snapshot) => {
+                const settings = snapshot.val() || {};
                 
-                colorSettings.forEach(setting => {
-                    const rgbValue = colors[setting.key] || setting.default;
-                    document.documentElement.style.setProperty(
-                        setting.cssVar, 
-                        `rgb(${rgbValue})`
-                    );
+                appSettingKeys.forEach(key => {
+                    const row = document.createElement('tr');
+                    
+                    // Setting name cell
+                    const nameCell = document.createElement('td');
+                    nameCell.textContent = key;
+                    row.appendChild(nameCell);
+                    
+                    // Value input cell
+                    const valueCell = document.createElement('td');
+                    
+                    if (key === 'WarnaBackground') {
+                        const container = document.createElement('div');
+                        container.className = 'color-input';
+                        
+                        const textInput = document.createElement('input');
+                        textInput.type = 'text';
+                        textInput.id = `input_${key}`;
+                        textInput.value = settings[key] || '255, 255, 255';
+                        textInput.placeholder = 'R, G, B (e.g. 255, 0, 0)';
+                        
+                        const previewBox = document.createElement('div');
+                        previewBox.className = 'color-preview-box';
+                        previewBox.style.backgroundColor = `rgb(${settings[key] || '255, 255, 255'})`;
+                        
+                        textInput.addEventListener('input', () => {
+                            const rgb = textInput.value;
+                            if (/^\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*$/.test(rgb)) {
+                                previewBox.style.backgroundColor = `rgb(${rgb})`;
+                            }
+                        });
+                        
+                        container.appendChild(textInput);
+                        container.appendChild(previewBox);
+                        valueCell.appendChild(container);
+                    } 
+                    else if (key === 'LogoAplikasi' || key === 'ImageBackground') {
+                        const urlInput = document.createElement('input');
+                        urlInput.type = 'url';
+                        urlInput.id = `input_${key}`;
+                        urlInput.value = settings[key] || '';
+                        urlInput.placeholder = 'Enter image URL';
+                        valueCell.appendChild(urlInput);
+                    }
+                    else {
+                        const textInput = document.createElement('input');
+                        textInput.type = 'text';
+                        textInput.id = `input_${key}`;
+                        textInput.value = settings[key] || '';
+                        valueCell.appendChild(textInput);
+                    }
+                    
+                    row.appendChild(valueCell);
+                    
+                    // Save button cell
+                    const actionCell = document.createElement('td');
+                    const saveButton = document.createElement('button');
+                    saveButton.className = 'save-btn';
+                    saveButton.textContent = 'Save';
+                    saveButton.onclick = () => {
+                        const newValue = document.getElementById(`input_${key}`).value;
+                        updateSetting(key, newValue);
+                    };
+                    actionCell.appendChild(saveButton);
+                    row.appendChild(actionCell);
+                    
+                    tableBody.appendChild(row);
                 });
+                
+                updatePreview();
+            }).catch((error) => {
+                showStatus(`Error loading settings: ${error.message}`, false);
             });
         }
 
-        // Modified createColorSettingsTable for RGB
+        // Function to create color settings table
         function createColorSettingsTable() {
             const tableBody = document.getElementById('colorSettingsBody');
             
@@ -287,7 +666,7 @@
                     saveButton.textContent = 'Save';
                     saveButton.onclick = () => {
                         const rgbString = document.getElementById(`rgb_${setting.key}`).value;
-                        if (isValidRgb(rgbString)) {
+                        if (/^\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*$/.test(rgbString)) {
                             updateColorSetting(setting.key, rgbString);
                         } else {
                             showStatus('Please enter valid RGB values (0-255 for each channel)', false);
@@ -299,14 +678,28 @@
                     tableBody.appendChild(row);
                 });
                 
-                // Apply initial color settings
                 applyColorSettings();
             }).catch((error) => {
                 showStatus(`Error loading color settings: ${error.message}`, false);
             });
         }
 
-        // [Rest of the JavaScript code remains the same]
+        // Load customer service settings
+        function loadCustomerServiceSettings() {
+            csSettingsRef.once('value').then((snapshot) => {
+                const csSettings = snapshot.val() || {};
+                document.getElementById('whatsappNumber').value = csSettings.whatsappNumber || '';
+                document.getElementById('customerServiceEmail').value = csSettings.email || '';
+                document.getElementById('termsConditionsUrl').value = csSettings.termsConditionsUrl || '';
+            });
+        }
+
+        // Initialize the page when loaded
+        window.onload = function() {
+            createSettingsTable();
+            createColorSettingsTable();
+            loadCustomerServiceSettings();
+        };
     </script>
 </body>
 </html>
