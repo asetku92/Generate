@@ -6,6 +6,7 @@
     <title>ASIAPAYMENT Application Settings</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -58,21 +59,6 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
-        }
-        .file-input {
-            display: none;
-        }
-        .file-label {
-            display: inline-block;
-            padding: 8px 12px;
-            background-color: #3498db;
-            color: white;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .file-label:hover {
-            background-color: #2980b9;
         }
         .save-btn {
             background-color: #2ecc71;
@@ -128,6 +114,19 @@
             vertical-align: middle;
             margin-left: 10px;
         }
+        
+        /* Customer Service Section */
+        .customer-service-section {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .cs-table {
+            margin-top: 15px;
+        }
+        .cs-table th {
+            background-color: #f8f9fa;
+        }
     </style>
 </head>
 <body>
@@ -165,6 +164,40 @@
                 <p id="appTaglinePreview">Tagline will appear here</p>
             </div>
         </div>
+        
+        <!-- Customer Service Settings Section -->
+        <div class="settings-section customer-service-section">
+            <h2>Customer Service Settings</h2>
+            <table class="cs-table">
+                <thead>
+                    <tr>
+                        <th width="25%">Setting</th>
+                        <th width="55%">Value</th>
+                        <th width="20%">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>WhatsApp Number</td>
+                        <td>
+                            <input type="text" id="whatsappNumber" placeholder="6281234567890">
+                        </td>
+                        <td>
+                            <button class="save-btn" onclick="saveCustomerServiceSettings()">Save</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Customer Service Email</td>
+                        <td>
+                            <input type="text" id="customerServiceEmail" placeholder="support@asiapayment.com">
+                        </td>
+                        <td>
+                            <button class="save-btn" onclick="saveCustomerServiceSettings()">Save</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
@@ -177,6 +210,7 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const settingsRef = database.ref('ASIAPAYMENT/setting/Lain2');
+        const csSettingsRef = database.ref('ASIAPAYMENT/setting/CustomerService');
 
         // Application settings keys
         const appSettingKeys = [
@@ -212,6 +246,25 @@
                 })
                 .catch((error) => {
                     showStatus(`Error updating ${key}: ${error.message}`, false);
+                });
+        }
+
+        // Function to save customer service settings
+        function saveCustomerServiceSettings() {
+            const whatsappNumber = document.getElementById('whatsappNumber').value;
+            const customerServiceEmail = document.getElementById('customerServiceEmail').value;
+            
+            const updates = {
+                whatsappNumber: whatsappNumber,
+                email: customerServiceEmail
+            };
+            
+            csSettingsRef.update(updates)
+                .then(() => {
+                    showStatus('Customer service settings saved successfully', true);
+                })
+                .catch((error) => {
+                    showStatus(`Error saving customer service settings: ${error.message}`, false);
                 });
         }
 
@@ -279,31 +332,6 @@
                 urlInput.value = value || '';
                 urlInput.placeholder = 'Enter image URL';
                 container.appendChild(urlInput);
-                
-                const fileInput = document.createElement('input');
-                fileInput.type = 'file';
-                fileInput.id = `file_${key}`;
-                fileInput.className = 'file-input';
-                fileInput.accept = 'image/*';
-                container.appendChild(fileInput);
-                
-                const fileLabel = document.createElement('label');
-                fileLabel.htmlFor = `file_${key}`;
-                fileLabel.className = 'file-label';
-                fileLabel.textContent = 'Upload Image';
-                container.appendChild(fileLabel);
-                
-                // Handle file selection
-                fileInput.addEventListener('change', (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                            urlInput.value = event.target.result;
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                });
             }
             else {
                 const textInput = document.createElement('input');
@@ -343,12 +371,7 @@
                     saveButton.className = 'save-btn';
                     saveButton.textContent = 'Save';
                     saveButton.onclick = () => {
-                        let newValue;
-                        if (key === 'LogoAplikasi' || key === 'ImageBackground') {
-                            newValue = document.getElementById(`input_${key}`).value;
-                        } else {
-                            newValue = document.getElementById(`input_${key}`).value;
-                        }
+                        const newValue = document.getElementById(`input_${key}`).value;
                         updateSetting(key, newValue);
                     };
                     actionCell.appendChild(saveButton);
@@ -364,8 +387,20 @@
             });
         }
 
+        // Load customer service settings
+        function loadCustomerServiceSettings() {
+            csSettingsRef.once('value').then((snapshot) => {
+                const csSettings = snapshot.val() || {};
+                document.getElementById('whatsappNumber').value = csSettings.whatsappNumber || '';
+                document.getElementById('customerServiceEmail').value = csSettings.email || '';
+            });
+        }
+
         // Initialize the page when loaded
-        window.onload = createSettingsTable;
+        window.onload = function() {
+            createSettingsTable();
+            loadCustomerServiceSettings();
+        };
     </script>
 </body>
 </html>
