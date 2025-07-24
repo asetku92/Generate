@@ -65,21 +65,6 @@
             align-items: center;
             gap: 10px;
         }
-        .rgb-inputs {
-            display: flex;
-            gap: 5px;
-        }
-        .rgb-inputs input {
-            width: 60px;
-            text-align: center;
-        }
-        .rgb-sliders {
-            width: 100%;
-            margin-top: 5px;
-        }
-        .rgb-sliders input[type="range"] {
-            width: 100%;
-        }
         .color-preview-box {
             width: 30px;
             height: 30px;
@@ -174,12 +159,12 @@
         </div>
         
         <div class="settings-section">
-            <h2>Color Settings (RGB Format)</h2>
+            <h2>Color Settings (Integer Format)</h2>
             <table id="colorSettingsTable">
                 <thead>
                     <tr>
                         <th width="25%">Element</th>
-                        <th width="55%">RGB Color Value</th>
+                        <th width="55%">Integer Color Value</th>
                         <th width="20%">Action</th>
                     </tr>
                 </thead>
@@ -417,138 +402,43 @@
             });
         }
 
-        // Function to create RGB input field
-        function createRgbInputField(setting, value) {
+        // Function to create simple text input for color
+        function createColorInputField(setting, value) {
             const container = document.createElement('div');
             container.className = 'color-input';
             
             // Handle both Android integer and RGB string formats
-            let r, g, b;
+            let rgbValue;
             if (typeof value === 'number') {
                 // Convert Android color to RGB
-                const rgbStr = androidColorToRgb(value);
-                [r, g, b] = rgbStr.split(',').map(v => parseInt(v.trim()));
+                rgbValue = androidColorToRgb(value);
             } else {
                 // Use RGB string directly
-                [r, g, b] = (value || setting.default).split(',').map(v => parseInt(v.trim()));
+                rgbValue = value || setting.default;
             }
             
-            // Create RGB text inputs
-            const rgbInputs = document.createElement('div');
-            rgbInputs.className = 'rgb-inputs';
-            
-            const rInput = document.createElement('input');
-            rInput.type = 'text';
-            rInput.placeholder = 'R';
-            rInput.value = r;
-            rInput.dataset.channel = 'r';
-            
-            const gInput = document.createElement('input');
-            gInput.type = 'text';
-            gInput.placeholder = 'G';
-            gInput.value = g;
-            gInput.dataset.channel = 'g';
-            
-            const bInput = document.createElement('input');
-            bInput.type = 'text';
-            bInput.placeholder = 'B';
-            bInput.value = b;
-            bInput.dataset.channel = 'b';
-            
-            rgbInputs.appendChild(rInput);
-            rgbInputs.appendChild(gInput);
-            rgbInputs.appendChild(bInput);
+            // Create text input
+            const textInput = document.createElement('input');
+            textInput.type = 'text';
+            textInput.id = `input_${setting.key}`;
+            textInput.value = rgbValue;
+            textInput.placeholder = 'R, G, B (e.g. 255, 0, 0)';
             
             // Create color preview box
             const previewBox = document.createElement('div');
             previewBox.className = 'color-preview-box';
-            previewBox.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+            previewBox.style.backgroundColor = `rgb(${rgbValue})`;
             
-            // Create RGB sliders
-            const slidersContainer = document.createElement('div');
-            slidersContainer.className = 'rgb-sliders';
-            
-            const rSlider = document.createElement('input');
-            rSlider.type = 'range';
-            rSlider.min = '0';
-            rSlider.max = '255';
-            rSlider.value = r;
-            rSlider.dataset.channel = 'r';
-            
-            const gSlider = document.createElement('input');
-            gSlider.type = 'range';
-            gSlider.min = '0';
-            gSlider.max = '255';
-            gSlider.value = g;
-            gSlider.dataset.channel = 'g';
-            
-            const bSlider = document.createElement('input');
-            bSlider.type = 'range';
-            bSlider.min = '0';
-            bSlider.max = '255';
-            bSlider.value = b;
-            bSlider.dataset.channel = 'b';
-            
-            slidersContainer.appendChild(rSlider);
-            slidersContainer.appendChild(gSlider);
-            slidersContainer.appendChild(bSlider);
-            
-            // Update function
-            const updateColor = () => {
-                r = parseInt(rInput.value) || 0;
-                g = parseInt(gInput.value) || 0;
-                b = parseInt(bInput.value) || 0;
-                
-                // Clamp values
-                r = Math.min(255, Math.max(0, r));
-                g = Math.min(255, Math.max(0, g));
-                b = Math.min(255, Math.max(0, b));
-                
-                // Update inputs
-                rInput.value = r;
-                gInput.value = g;
-                bInput.value = b;
-                
-                // Update sliders
-                rSlider.value = r;
-                gSlider.value = g;
-                bSlider.value = b;
-                
-                // Update preview
-                previewBox.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
-                
-                return `${r}, ${g}, ${b}`;
-            };
-            
-            // Event listeners
-            [rInput, gInput, bInput].forEach(input => {
-                input.addEventListener('input', () => {
-                    const rgbString = updateColor();
-                    document.getElementById(`rgb_${setting.key}`).value = rgbString;
-                });
+            // Update preview when input changes
+            textInput.addEventListener('input', () => {
+                const rgb = textInput.value;
+                if (/^\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*$/.test(rgb)) {
+                    previewBox.style.backgroundColor = `rgb(${rgb})`;
+                }
             });
             
-            [rSlider, gSlider, bSlider].forEach(slider => {
-                slider.addEventListener('input', () => {
-                    const channel = slider.dataset.channel;
-                    if (channel === 'r') rInput.value = slider.value;
-                    if (channel === 'g') gInput.value = slider.value;
-                    if (channel === 'b') bInput.value = slider.value;
-                    const rgbString = updateColor();
-                    document.getElementById(`rgb_${setting.key}`).value = rgbString;
-                });
-            });
-            
-            // Hidden input to store the RGB string
-            const hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.id = `rgb_${setting.key}`;
-            hiddenInput.value = `${r}, ${g}, ${b}`;
-            
-            container.appendChild(rgbInputs);
+            container.appendChild(textInput);
             container.appendChild(previewBox);
-            container.appendChild(slidersContainer);
-            container.appendChild(hiddenInput);
             
             return container;
         }
@@ -652,7 +542,7 @@
                     
                     // Value input cell
                     const valueCell = document.createElement('td');
-                    const inputContainer = createRgbInputField(
+                    const inputContainer = createColorInputField(
                         setting, 
                         colors[setting.key]
                     );
@@ -665,7 +555,7 @@
                     saveButton.className = 'save-btn';
                     saveButton.textContent = 'Save';
                     saveButton.onclick = () => {
-                        const rgbString = document.getElementById(`rgb_${setting.key}`).value;
+                        const rgbString = document.getElementById(`input_${setting.key}`).value;
                         if (/^\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*$/.test(rgbString)) {
                             updateColorSetting(setting.key, rgbString);
                         } else {
