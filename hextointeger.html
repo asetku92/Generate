@@ -1,112 +1,187 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Konversi HEX ke ARGB</title>
+    <title>Konversi HEX ke ARGB dan Integer</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
             padding: 20px; 
             max-width: 600px; 
-            margin: 0 auto; 
+            margin: 0 auto;
+            background-color: #f5f5f5;
         }
-        input, button { 
-            padding: 8px; 
-            margin-top: 10px; 
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .result-box {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            border-left: 4px solid #3498db;
+        }
+        .result-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .result-value {
+            font-family: monospace;
+            font-size: 16px;
+            word-break: break-all;
         }
         #colorPreview {
             width: 100px;
             height: 100px;
-            margin-top: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .input-group { 
-            margin-bottom: 15px; 
-        }
-        label { 
-            display: block; 
-            margin-bottom: 5px; 
-            font-weight: bold; 
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .color-link {
-            color: #0066cc;
+            color: #3498db;
             text-decoration: none;
         }
         .color-link:hover {
             text-decoration: underline;
         }
-        iframe {
-            width: 100%;
-            height: 400px;
-            border: 1px solid #ddd;
-            margin-top: 20px;
-            display: none;
+        .info-text {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
-    <h2>Konversi HEX ke ARGB</h2>
-    
-    <div class="input-group">
-        <label for="hexInput">Masukkan kode warna HEX:</label>
-        <input type="text" id="hexInput" placeholder="#RRGGBB atau RRGGBB" />
-        <button onclick="convert()">Konversi</button>
-        <p>
-            Cari warna HEX di: 
-            <a href="https://www.color-hex.com/" target="_blank" class="color-link">color-hex.com</a> atau
-            <a href="#" onclick="showColorPicker()" class="color-link">buka color picker</a>.
-        </p>
+    <div class="container">
+        <h1>Konversi Warna HEX ke ARGB & Integer</h1>
+        
+        <div class="input-group">
+            <label for="hexInput">Masukkan Kode Warna HEX:</label>
+            <input type="text" id="hexInput" placeholder="#FF0000 atau FF0000" />
+            <p class="info-text">Contoh: #FF5733 atau FF5733 (tanpa alpha/transparansi)</p>
+            <button onclick="convertHex()">Konversi</button>
+        </div>
+        
+        <div id="colorPreview"></div>
+        
+        <div class="result-box">
+            <div class="result-title">Hasil Konversi:</div>
+            <p><strong>Format ARGB:</strong> <span id="argbResult" class="result-value">(A, R, G, B)</span></p>
+            <p><strong>Integer (Kodular):</strong> <span id="intResult" class="result-value">0</span></p>
+            <p><strong>Representasi:</strong> <span id="representation" class="result-value">-</span></p>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <p>Cari warna HEX di: 
+                <a href="https://www.color-hex.com/" target="_blank" class="color-link">color-hex.com</a> atau
+                <a href="https://htmlcolorcodes.com/color-picker/" target="_blank" class="color-link">color picker</a>.
+            </p>
+        </div>
     </div>
-    
-    <div class="result-group">
-        <p id="argbResult">ARGB: </p>
-        <p id="intResult">Integer: </p>
-    </div>
-    
-    <div id="colorPreview"></div>
-
-    <!-- Iframe untuk color picker external -->
-    <iframe id="colorPickerFrame" src="about:blank"></iframe>
 
     <script>
-        function convert() {
+        function convertHex() {
+            // Ambil nilai HEX dari input
             let hex = document.getElementById("hexInput").value.trim();
-            if (hex.startsWith("#")) hex = hex.substring(1);
-
+            
+            // Hilangkan # jika ada
+            if (hex.startsWith("#")) {
+                hex = hex.substring(1);
+            }
+            
+            // Validasi format HEX
             if (!/^[0-9A-Fa-f]{6}$/i.test(hex)) {
-                alert("Masukkan kode hex 6 digit yang valid (contoh: FF00FF atau #FF00FF)");
+                alert("Format HEX tidak valid! Masukkan 6 digit warna HEX (contoh: FF0000 atau #FF0000)");
                 return;
             }
-
+            
+            // Parse komponen warna
             const r = parseInt(hex.substring(0, 2), 16);
             const g = parseInt(hex.substring(2, 4), 16);
             const b = parseInt(hex.substring(4, 6), 16);
-            const a = 255;
-
+            const a = 255; // Default alpha (tidak transparan)
+            
+            // Format ARGB
             const argb = `(${a}, ${r}, ${g}, ${b})`;
-            const intVal = (a << 24) | (r << 16) | (g << 8) | b;
-            const intUnsigned = intVal >>> 0;
-
-            document.getElementById("argbResult").innerText = `ARGB: ${argb}`;
-            document.getElementById("intResult").innerText = `Integer: ${intUnsigned}`;
+            
+            // Hitung nilai integer (32-bit signed)
+            const intValue = (a << 24) | (r << 16) | (g << 8) | b;
+            
+            // Konversi ke signed integer (Kodular compatible)
+            let signedInt;
+            if (intValue > 2147483647) {
+                signedInt = intValue - 4294967296;
+            } else {
+                signedInt = intValue;
+            }
+            
+            // Tampilkan hasil
+            document.getElementById("argbResult").textContent = argb;
+            document.getElementById("intResult").textContent = signedInt;
+            document.getElementById("representation").textContent = 
+                `ARGB: ${argb} | Hex: 0x${intValue.toString(16).toUpperCase()} | Unsigned: ${intValue}`;
+            
+            // Tampilkan preview warna
             document.getElementById("colorPreview").style.backgroundColor = `#${hex}`;
         }
-
-        function showColorPicker() {
-            const frame = document.getElementById("colorPickerFrame");
-            frame.style.display = "block";
-            frame.src = "https://htmlcolorcodes.com/color-picker/";
-        }
-
-        // Auto-convert jika URL mengandung parameter hex (contoh: ?hex=FF5733)
+        
+        // Auto-convert jika URL ada parameter hex
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             const hexParam = urlParams.get('hex');
             if (hexParam) {
                 document.getElementById("hexInput").value = hexParam;
-                convert();
+                convertHex();
             }
         };
+        
+        // Konversi saat tekan Enter
+        document.getElementById("hexInput").addEventListener("keyup", function(event) {
+            if (event.key === "Enter") {
+                convertHex();
+            }
+        });
     </script>
 </body>
 </html>
