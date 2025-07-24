@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>HEX ke ARGB Converter</title>
+</head>
+<body>
+  <h2>Konversi HEX ke ARGB</h2>
+  <input type="text" id="hexInput" placeholder="#RRGGBB atau #AARRGGBB">
+  <button onclick="convert()">Konversi</button>
+  <p id="output"></p>
+
+  <script>
+    function convert() {
+      let hex = document.getElementById('hexInput').value.trim().replace('#', '');
+      let a = 255, r, g, b;
+
+      if (hex.length === 6) {
+        r = parseInt(hex.slice(0, 2), 16);
+        g = parseInt(hex.slice(2, 4), 16);
+        b = parseInt(hex.slice(4, 6), 16);
+      } else if (hex.length === 8) {
+        a = parseInt(hex.slice(0, 2), 16);
+        r = parseInt(hex.slice(2, 4), 16);
+        g = parseInt(hex.slice(4, 6), 16);
+        b = parseInt(hex.slice(6, 8), 16);
+      } else {
+        document.getElementById('output').textContent = 'Format HEX tidak valid';
+        return;
+      }
+
+      document.getElementById('output').innerHTML =
+        `ARGB: (${a}, ${r}, ${g}, ${b})<br>Integer: ${((a << 24) | (r << 16) | (g << 8) | b) >>> 0}`;
+    }
+  </script>
+</body>
+</html>
