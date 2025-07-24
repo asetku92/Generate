@@ -159,12 +159,12 @@
         </div>
         
         <div class="settings-section">
-            <h2>Color Settings (Integer Format)</h2>
+            <h2>Color Settings</h2>
             <table id="colorSettingsTable">
                 <thead>
                     <tr>
                         <th width="25%">Element</th>
-                        <th width="55%">Integer Color Value</th>
+                        <th width="55%">Color Value</th>
                         <th width="20%">Action</th>
                     </tr>
                 </thead>
@@ -258,28 +258,14 @@
             "AlamatServer"
         ];
 
-        // Color settings configuration with RGB defaults
+        // Color settings configuration
         const colorSettings = [
-            { key: "appNameColor", name: "App Name Color", cssVar: "--app-name-color", default: "44, 62, 80" },
-            { key: "taglineColor", name: "Tagline Color", cssVar: "--tagline-color", default: "127, 140, 141" },
-            { key: "buttonColor", name: "Primary Button", cssVar: "--button-color", default: "52, 152, 219" },
-            { key: "secondaryButton", name: "Secondary Button", cssVar: "--secondary-button", default: "46, 204, 113" },
-            { key: "textColor", name: "Text Color", cssVar: "--text-color", default: "51, 51, 51" }
+            { key: "appNameColor", name: "App Name Color", cssVar: "--app-name-color", default: "#2c3e50" },
+            { key: "taglineColor", name: "Tagline Color", cssVar: "--tagline-color", default: "#7f8c8d" },
+            { key: "buttonColor", name: "Primary Button", cssVar: "--button-color", default: "#3498db" },
+            { key: "secondaryButton", name: "Secondary Button", cssVar: "--secondary-button", default: "#2ecc71" },
+            { key: "textColor", name: "Text Color", cssVar: "--text-color", default: "#333333" }
         ];
-
-        // Fungsi konversi warna RGB ke format Android (integer signed)
-        function rgbToAndroidColor(r, g, b) {
-            return -((r << 16) | (g << 8) | b);
-        }
-
-        // Fungsi konversi dari format Android ke string RGB
-        function androidColorToRgb(androidColor) {
-            const colorValue = -androidColor; // hilangkan tanda negatif
-            const r = (colorValue >> 16) & 0xff; // ambil komponen merah
-            const g = (colorValue >> 8) & 0xff;  // ambil komponen hijau
-            const b = colorValue & 0xff;         // ambil komponen biru
-            return `${r}, ${g}, ${b}`; // hasilkan string RGB
-        }
 
         // Function to show status message
         function showStatus(message, isSuccess) {
@@ -309,12 +295,8 @@
 
         // Function to update color settings in Firebase
         function updateColorSetting(key, value) {
-            // Convert RGB string to Android signed integer
-            const [r, g, b] = value.split(',').map(v => parseInt(v.trim()));
-            const androidColor = rgbToAndroidColor(r, g, b);
-            
             const updates = {};
-            updates[key] = androidColor;
+            updates[key] = value;
             
             colorSettingsRef.update(updates)
                 .then(() => {
@@ -374,7 +356,7 @@
                 }
                 
                 if (settings.WarnaBackground) {
-                    document.body.style.backgroundColor = `rgb(${settings.WarnaBackground})`;
+                    document.body.style.backgroundColor = settings.WarnaBackground;
                 }
             });
         }
@@ -385,55 +367,49 @@
                 const colors = snapshot.val() || {};
                 
                 colorSettings.forEach(setting => {
-                    let rgbValue;
-                    if (typeof colors[setting.key] === 'number') {
-                        // Convert from Android signed integer to RGB string
-                        rgbValue = androidColorToRgb(colors[setting.key]);
-                    } else {
-                        // Use default or existing RGB string
-                        rgbValue = colors[setting.key] || setting.default;
-                    }
+                    const value = colors[setting.key] || setting.default;
+                    document.documentElement.style.setProperty(setting.cssVar, value);
                     
-                    document.documentElement.style.setProperty(
-                        setting.cssVar, 
-                        `rgb(${rgbValue})`
-                    );
+                    // Update preview box color if exists
+                    const previewBox = document.querySelector(`#input_${setting.key}`)?.nextElementSibling;
+                    if (previewBox) {
+                        try {
+                            previewBox.style.backgroundColor = value;
+                        } catch {
+                            previewBox.style.backgroundColor = 'transparent';
+                        }
+                    }
                 });
             });
         }
 
-        // Function to create simple text input for color
+        // Function to create color input field
         function createColorInputField(setting, value) {
             const container = document.createElement('div');
             container.className = 'color-input';
-            
-            // Handle both Android integer and RGB string formats
-            let rgbValue;
-            if (typeof value === 'number') {
-                // Convert Android color to RGB
-                rgbValue = androidColorToRgb(value);
-            } else {
-                // Use RGB string directly
-                rgbValue = value || setting.default;
-            }
             
             // Create text input
             const textInput = document.createElement('input');
             textInput.type = 'text';
             textInput.id = `input_${setting.key}`;
-            textInput.value = rgbValue;
-            textInput.placeholder = 'R, G, B (e.g. 255, 0, 0)';
+            textInput.value = value || setting.default;
+            textInput.placeholder = 'Contoh: red, #FF0000, rgb(255,0,0)';
             
             // Create color preview box
             const previewBox = document.createElement('div');
             previewBox.className = 'color-preview-box';
-            previewBox.style.backgroundColor = `rgb(${rgbValue})`;
+            try {
+                previewBox.style.backgroundColor = value || setting.default;
+            } catch {
+                previewBox.style.backgroundColor = 'transparent';
+            }
             
             // Update preview when input changes
             textInput.addEventListener('input', () => {
-                const rgb = textInput.value;
-                if (/^\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*$/.test(rgb)) {
-                    previewBox.style.backgroundColor = `rgb(${rgb})`;
+                try {
+                    previewBox.style.backgroundColor = textInput.value;
+                } catch {
+                    previewBox.style.backgroundColor = 'transparent';
                 }
             });
             
@@ -468,17 +444,22 @@
                         const textInput = document.createElement('input');
                         textInput.type = 'text';
                         textInput.id = `input_${key}`;
-                        textInput.value = settings[key] || '255, 255, 255';
-                        textInput.placeholder = 'R, G, B (e.g. 255, 0, 0)';
+                        textInput.value = settings[key] || '#ffffff';
+                        textInput.placeholder = 'Contoh: white, #FFFFFF, rgb(255,255,255)';
                         
                         const previewBox = document.createElement('div');
                         previewBox.className = 'color-preview-box';
-                        previewBox.style.backgroundColor = `rgb(${settings[key] || '255, 255, 255'})`;
+                        try {
+                            previewBox.style.backgroundColor = settings[key] || '#ffffff';
+                        } catch {
+                            previewBox.style.backgroundColor = 'transparent';
+                        }
                         
                         textInput.addEventListener('input', () => {
-                            const rgb = textInput.value;
-                            if (/^\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*$/.test(rgb)) {
-                                previewBox.style.backgroundColor = `rgb(${rgb})`;
+                            try {
+                                previewBox.style.backgroundColor = textInput.value;
+                            } catch {
+                                previewBox.style.backgroundColor = 'transparent';
                             }
                         });
                         
@@ -555,12 +536,8 @@
                     saveButton.className = 'save-btn';
                     saveButton.textContent = 'Save';
                     saveButton.onclick = () => {
-                        const rgbString = document.getElementById(`input_${setting.key}`).value;
-                        if (/^\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*$/.test(rgbString)) {
-                            updateColorSetting(setting.key, rgbString);
-                        } else {
-                            showStatus('Please enter valid RGB values (0-255 for each channel)', false);
-                        }
+                        const colorValue = document.getElementById(`input_${setting.key}`).value;
+                        updateColorSetting(setting.key, colorValue);
                     };
                     actionCell.appendChild(saveButton);
                     row.appendChild(actionCell);
