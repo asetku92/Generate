@@ -20,7 +20,7 @@
       .then(res => res.json())
       .then(data => {
         const outputDiv = document.getElementById("output");
-        outputDiv.innerHTML = ""; // Kosongkan isi sebelumnya
+        outputDiv.innerHTML = "";
 
         for (const kategori in data) {
           const divKategori = document.createElement("div");
@@ -41,6 +41,11 @@
 
           divKategori.appendChild(listProduk);
           outputDiv.appendChild(divKategori);
+        }
+
+        // Kirim ke Kodular
+        if (window.AppInventor) {
+          window.AppInventor.setWebViewString(JSON.stringify(data));
         }
       })
       .catch(err => {
