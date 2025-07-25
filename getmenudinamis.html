@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Menu Dinamis</title>
+  <style>
+    body { font-family: sans-serif; background: #f2f2f2; padding: 20px; }
+    .kategori { margin-bottom: 30px; background: #fff; padding: 10px; border-radius: 10px; box-shadow: 0 0 5px #ccc; }
+    .kategori h3 { margin: 0 0 10px; color: #333; }
+    .produk { margin-left: 15px; }
+  </style>
+</head>
+<body>
+  <h2>Daftar Menu Dinamis</h2>
+  <div id="output">Loading...</div>
+
+  <script>
+    const firebaseUrl = "https://steady-fin-368617-default-rtdb.firebaseio.com/ASIAPAYMENT/setting/MenuDinamis/menu.json";
+
+    fetch(firebaseUrl)
+      .then(res => res.json())
+      .then(data => {
+        const outputDiv = document.getElementById("output");
+        outputDiv.innerHTML = ""; // Kosongkan isi sebelumnya
+
+        for (const kategori in data) {
+          const divKategori = document.createElement("div");
+          divKategori.className = "kategori";
+
+          const judul = document.createElement("h3");
+          judul.textContent = kategori;
+          divKategori.appendChild(judul);
+
+          const listProduk = document.createElement("div");
+          listProduk.className = "produk";
+
+          for (const produk in data[kategori]) {
+            const p = document.createElement("p");
+            p.textContent = produk;
+            listProduk.appendChild(p);
+          }
+
+          divKategori.appendChild(listProduk);
+          outputDiv.appendChild(divKategori);
+        }
+      })
+      .catch(err => {
+        document.getElementById("output").textContent = "Gagal memuat data: " + err;
+      });
+  </script>
+</body>
+</html>
