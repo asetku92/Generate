@@ -8,253 +8,539 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f5f5f5;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             color: #333;
+            min-height: 100vh;
         }
+        
         .container {
-            max-width: 1000px;
-            margin: 0 auto;
+            max-width: 1200px;
+            margin: 30px auto;
             background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
         }
-        h1 {
-            color: #2c3e50;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-            margin-top: 0;
+        
+        /* Header Styles */
+        .app-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #1a2530 100%);
+            color: white;
+            padding: 30px;
+            position: relative;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
+        
+        .app-header-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .app-logo-container {
+            margin-bottom: 20px;
+        }
+        
+        .app-logo {
+            max-height: 80px;
+            max-width: 100%;
+            filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.3));
+        }
+        
+        .app-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: white;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        
+        .app-tagline {
+            font-size: 1.2rem;
+            opacity: 0.85;
+            margin-bottom: 25px;
+            font-weight: 300;
+        }
+        
+        .app-bg-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+            opacity: 0.2;
+        }
+        
+        .app-bg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+        
+        .settings-column {
+            background: #f9fafc;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .preview-column {
+            background: #fff;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        
         .settings-section {
             margin-bottom: 30px;
         }
-        .settings-section h2 {
-            color: #3498db;
-            margin-bottom: 15px;
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #3498db;
+            color: #2c3e50;
         }
+        
+        .section-title i {
+            margin-right: 10px;
+            color: #3498db;
+            font-size: 1.4rem;
+        }
+        
+        .section-title h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         }
+        
         th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
+            border: 1px solid #e1e5eb;
+            padding: 14px;
             text-align: left;
         }
+        
         th {
-            background-color: #f2f2f2;
+            background-color: #f0f5ff;
             font-weight: 600;
+            color: #2c3e50;
         }
+        
         tr:nth-child(even) {
-            background-color: #f9f9f9;
+            background-color: #f9fbfd;
         }
-        input[type="text"], input[type="url"] {
+        
+        input[type="text"], input[type="url"], input[type="color"], textarea {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 10px;
+            border: 1px solid #d1d9e6;
+            border-radius: 6px;
             box-sizing: border-box;
+            font-family: inherit;
+            transition: border-color 0.3s;
         }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
         .color-input {
             display: flex;
             align-items: center;
             gap: 10px;
         }
+        
         .color-preview-box {
             width: 30px;
             height: 30px;
             border: 1px solid #ddd;
             border-radius: 4px;
+            flex-shrink: 0;
         }
+        
         .save-btn {
-            background-color: #2ecc71;
+            background: linear-gradient(to right, #2ecc71, #27ae60);
             color: white;
             border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
+            padding: 10px 20px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: 500;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(46, 204, 113, 0.3);
         }
+        
         .save-btn:hover {
-            background-color: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(46, 204, 113, 0.4);
         }
+        
+        .save-btn:active {
+            transform: translateY(0);
+        }
+        
         .preview-area {
-            margin-top: 20px;
-            padding: 15px;
-            border: 1px dashed #ddd;
-            border-radius: 4px;
+            flex-grow: 1;
+            padding: 25px;
+            border: 1px dashed #d1d9e6;
+            border-radius: 10px;
             text-align: center;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 400px;
         }
-        .logo-preview {
-            max-width: 200px;
-            max-height: 100px;
+        
+        .preview-title {
+            margin-bottom: 25px;
+            color: #2c3e50;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .preview-content {
+            margin: auto;
+            max-width: 300px;
+            width: 100%;
+        }
+        
+        .preview-logo {
+            max-width: 180px;
+            max-height: 90px;
+            margin: 0 auto 20px;
+            display: block;
+        }
+        
+        .preview-bg {
+            width: 100%;
+            height: 150px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border: 1px solid #eee;
+        }
+        
+        #appNamePreview {
+            color: var(--app-name-color, #2c3e50);
+            font-size: 1.8rem;
             margin-bottom: 10px;
+            font-weight: 700;
         }
-        .bg-preview {
-            max-width: 100%;
-            max-height: 150px;
-            margin-bottom: 10px;
+        
+        #appTaglinePreview {
+            color: var(--tagline-color, #7f8c8d);
+            margin-bottom: 25px;
+            font-size: 1.1rem;
         }
+        
+        .preview-button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 8px;
+            background-color: var(--button-color, #3498db);
+            color: white;
+            border-radius: 6px;
+            font-weight: 500;
+            min-width: 150px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+        
+        .preview-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .preview-secondary-button {
+            background-color: var(--secondary-button, #2ecc71);
+        }
+        
         .status {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 8px;
             display: none;
+            font-size: 0.95rem;
         }
+        
         .success {
             background-color: #d4edda;
             color: #155724;
+            border: 1px solid #c3e6cb;
             display: block;
         }
+        
         .error {
             background-color: #f8d7da;
             color: #721c24;
+            border: 1px solid #f5c6cb;
             display: block;
         }
-        #appNamePreview {
-            color: var(--app-name-color, rgb(44, 62, 80));
+        
+        .gradient-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
-        #appTaglinePreview {
-            color: var(--tagline-color, rgb(127, 140, 141));
+        
+        .gradient-preview {
+            width: 60px;
+            height: 60px;
+            border-radius: 6px;
+            border: 1px solid #d1d9e6;
+            flex-shrink: 0;
         }
-        .preview-button {
-            display: inline-block;
-            padding: 8px 16px;
-            margin: 5px;
-            background-color: var(--button-color, rgb(52, 152, 219));
-            color: white;
-            border-radius: 4px;
+        
+        .action-cell {
+            display: flex;
+            justify-content: flex-end;
         }
-        .preview-secondary-button {
-            background-color: var(--secondary-button, rgb(46, 204, 113));
+        
+        .gradient-help {
+            background-color: #f0f9ff;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 6px 6px 0;
         }
-        .color-picker-container {
+        
+        .gradient-help h4 {
+            margin-top: 0;
+            color: #2c3e50;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
-        .color-input-text {
-            flex: 1;
+        
+        .gradient-help ul {
+            padding-left: 20px;
+            margin: 10px 0;
         }
-        .color-picker {
-            width: 40px;
-            height: 40px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            cursor: pointer;
-            padding: 0;
+        
+        .gradient-help li {
+            margin-bottom: 8px;
         }
-        .hex-input {
-            width: 100px;
-            padding: 8px;
-            border: 1px solid #ddd;
+        
+        .gradient-help code {
+            background: #eef2f7;
+            padding: 2px 6px;
             border-radius: 4px;
             font-family: monospace;
+        }
+        
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .app-header {
+                padding: 20px;
+            }
+            
+            .app-header h1 {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>ASIAPAYMENT Application Settings</h1>
+        <!-- Header with logo and background -->
+        <div class="app-header">
+            <div class="app-bg-container">
+                <img id="appBg" class="app-bg" src="" alt="App Background">
+            </div>
+            <div class="app-header-content">
+                <div class="app-logo-container">
+                    <img id="appLogo" class="app-logo" src="" alt="ASIAPAYMENT Logo">
+                </div>
+                <h1>ASIAPAYMENT Application Settings</h1>
+                <p class="app-tagline">Customize your application appearance and settings</p>
+            </div>
+        </div>
         
         <div id="status" class="status"></div>
         
-        <div class="settings-section">
-            <h2>General Application Settings</h2>
-            <table id="appSettingsTable">
-                <thead>
-                    <tr>
-                        <th width="25%">Setting</th>
-                        <th width="55%">Value</th>
-                        <th width="20%">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="appSettingsBody">
-                    <!-- Table content will be populated by JavaScript -->
-                </tbody>
-            </table>
-        </div>
-        
-        <div class="settings-section">
-            <h2>Color Settings</h2>
-            <table id="colorSettingsTable">
-                <thead>
-                    <tr>
-                        <th width="25%">Element</th>
-                        <th width="55%">Color Value</th>
-                        <th width="20%">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="colorSettingsBody">
-                    <!-- Color settings will be added here -->
-                </tbody>
-            </table>
-        </div>
-        
-        <div class="preview-area">
-            <h3>Application Preview</h3>
-            <div id="logoPreviewContainer">
-                <img id="logoPreview" class="logo-preview" src="" alt="Logo Preview">
-            </div>
-            <div id="bgPreviewContainer" style="display: none;">
-                <img id="bgPreview" class="bg-preview" src="" alt="Background Preview">
-            </div>
-            <div id="appInfoPreview">
-                <h2 id="appNamePreview">Application Name</h2>
-                <p id="appTaglinePreview">Tagline will appear here</p>
-                <div>
-                    <span class="preview-button">Primary Button</span>
-                    <span class="preview-button preview-secondary-button">Secondary Button</span>
+        <div class="main-content">
+            <div class="settings-column">
+                <div class="settings-section">
+                    <div class="section-title">
+                        <i class="fas fa-sliders-h"></i>
+                        <h2>General Application Settings</h2>
+                    </div>
+                    
+                    <div class="gradient-help">
+                        <h4><i class="fas fa-info-circle"></i> Cara Setting Background Gradient</h4>
+                        <p>Gunakan format CSS valid untuk gradient:</p>
+                        <ul>
+                            <li><code>linear-gradient(direction, color-stop1, color-stop2, ...)</code></li>
+                            <li><code>radial-gradient(shape size at position, color-stop1, color-stop2, ...)</code></li>
+                        </ul>
+                        <p>Contoh:</p>
+                        <ul>
+                            <li><code>linear-gradient(135deg, #3498db 0%, #2c3e50 100%)</code></li>
+                            <li><code>linear-gradient(to right, #ff7e5f, #feb47b)</code></li>
+                            <li><code>radial-gradient(circle, #ff7e5f, #feb47b)</code></li>
+                        </ul>
+                    </div>
+                    
+                    <table id="appSettingsTable">
+                        <thead>
+                            <tr>
+                                <th width="25%">Setting</th>
+                                <th width="55%">Value</th>
+                                <th width="20%">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="appSettingsBody">
+                            <!-- Table content will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="settings-section">
+                    <div class="section-title">
+                        <i class="fas fa-palette"></i>
+                        <h2>Color Settings</h2>
+                    </div>
+                    <table id="colorSettingsTable">
+                        <thead>
+                            <tr>
+                                <th width="25%">Element</th>
+                                <th width="55%">Color Value</th>
+                                <th width="20%">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="colorSettingsBody">
+                            <!-- Color settings will be added here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="settings-section">
+                    <div class="section-title">
+                        <i class="fas fa-headset"></i>
+                        <h2>Customer Service Settings</h2>
+                    </div>
+                    <table class="cs-table">
+                        <thead>
+                            <tr>
+                                <th width="25%">Setting</th>
+                                <th width="55%">Value</th>
+                                <th width="20%">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>WhatsApp Number</td>
+                                <td>
+                                    <input type="text" id="whatsappNumber" placeholder="6281234567890">
+                                </td>
+                                <td class="action-cell">
+                                    <button class="save-btn" onclick="saveCustomerServiceSettings()">
+                                        <i class="fas fa-save"></i> Save
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Customer Service Email</td>
+                                <td>
+                                    <input type="text" id="customerServiceEmail" placeholder="support@asiapayment.com">
+                                </td>
+                                <td class="action-cell">
+                                    <button class="save-btn" onclick="saveCustomerServiceSettings()">
+                                        <i class="fas fa-save"></i> Save
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Terms & Conditions URL</td>
+                                <td>
+                                    <input type="url" id="termsConditionsUrl" placeholder="https://example.com/terms">
+                                </td>
+                                <td class="action-cell">
+                                    <button class="save-btn" onclick="saveCustomerServiceSettings()">
+                                        <i class="fas fa-save"></i> Save
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-        </div>
-        
-        <div class="settings-section customer-service-section">
-            <h2>Customer Service Settings</h2>
-            <table class="cs-table">
-                <thead>
-                    <tr>
-                        <th width="25%">Setting</th>
-                        <th width="55%">Value</th>
-                        <th width="20%">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>WhatsApp Number</td>
-                        <td>
-                            <input type="text" id="whatsappNumber" placeholder="6281234567890">
-                        </td>
-                        <td>
-                            <button class="save-btn" onclick="saveCustomerServiceSettings()">Save</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Customer Service Email</td>
-                        <td>
-                            <input type="text" id="customerServiceEmail" placeholder="support@asiapayment.com">
-                        </td>
-                        <td>
-                            <button class="save-btn" onclick="saveCustomerServiceSettings()">Save</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Terms & Conditions URL</td>
-                        <td>
-                            <input type="url" id="termsConditionsUrl" placeholder="https://example.com/terms">
-                        </td>
-                        <td>
-                            <button class="save-btn" onclick="saveCustomerServiceSettings()">Save</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            
+            <div class="preview-column">
+                <div class="preview-area">
+                    <h3 class="preview-title">Application Preview</h3>
+                    <div class="preview-content">
+                        <img id="previewLogo" class="preview-logo" src="" alt="Logo Preview">
+                        <div id="previewBg" class="preview-bg"></div>
+                        <h2 id="appNamePreview">Application Name</h2>
+                        <p id="appTaglinePreview">Tagline will appear here</p>
+                        <div>
+                            <span class="preview-button">Primary Button</span>
+                            <span class="preview-button preview-secondary-button">Secondary Button</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <div class="section-title">
+                        <i class="fas fa-graduation-cap"></i>
+                        <h2>Gradient Examples</h2>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px;">
+                        <div style="height: 60px; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                        <div style="height: 60px; border-radius: 8px; background: linear-gradient(to right, #ff7e5f, #feb47b);"></div>
+                        <div style="height: 60px; border-radius: 8px; background: linear-gradient(45deg, #1a2a6c, #b21f1f, #1a2a6c);"></div>
+                        <div style="height: 60px; border-radius: 8px; background: radial-gradient(circle, #ff7e5f, #feb47b);"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -276,7 +562,7 @@
             "NamaAplikasi",
             "LogoAplikasi",
             "TagLine",
-            "WarnaBackground",
+            "BackgroundGradient", // Changed from WarnaBackground to BackgroundGradient
             "ImageBackground",
             "AlamatServer"
         ];
@@ -298,6 +584,7 @@
             
             setTimeout(() => {
                 statusDiv.className = 'status';
+                statusDiv.textContent = '';
             }, 3000);
         }
 
@@ -310,6 +597,16 @@
                 .then(() => {
                     showStatus(`Successfully updated ${key}`, true);
                     updatePreview();
+                    
+                    // Update gradient preview in real-time
+                    if (key === 'BackgroundGradient') {
+                        const previewBox = document.getElementById(`preview_${key}`);
+                        try {
+                            previewBox.style.background = value;
+                        } catch (e) {
+                            previewBox.style.background = 'linear-gradient(135deg, #3498db 0%, #2c3e50 100%)';
+                        }
+                    }
                 })
                 .catch((error) => {
                     showStatus(`Error updating ${key}: ${error.message}`, false);
@@ -363,29 +660,24 @@
             settingsRef.once('value').then((snapshot) => {
                 const settings = snapshot.val() || {};
                 
+                // Update logo previews
                 if (settings.LogoAplikasi) {
-                    document.getElementById('logoPreview').src = settings.LogoAplikasi;
-                    document.getElementById('logoPreviewContainer').style.display = 'block';
-                } else {
-                    document.getElementById('logoPreviewContainer').style.display = 'none';
+                    document.getElementById('appLogo').src = settings.LogoAplikasi;
+                    document.getElementById('previewLogo').src = settings.LogoAplikasi;
                 }
                 
+                // Update background image previews
                 if (settings.ImageBackground) {
-                    document.getElementById('bgPreview').src = settings.ImageBackground;
-                    document.getElementById('bgPreviewContainer').style.display = 'block';
-                } else {
-                    document.getElementById('bgPreviewContainer').style.display = 'none';
+                    document.getElementById('appBg').src = settings.ImageBackground;
+                    document.getElementById('previewBg').style.backgroundImage = `url('${settings.ImageBackground}')`;
                 }
                 
+                // Update app name and tagline
                 if (settings.NamaAplikasi) {
                     document.getElementById('appNamePreview').textContent = settings.NamaAplikasi;
                 }
                 if (settings.TagLine) {
                     document.getElementById('appTaglinePreview').textContent = settings.TagLine;
-                }
-                
-                if (settings.WarnaBackground) {
-                    document.body.style.backgroundColor = settings.WarnaBackground;
                 }
             });
         }
@@ -412,28 +704,25 @@
             });
         }
 
-        // Function to create color input field with color picker
+        // Function to create color input field
         function createColorInputField(setting, value) {
             const container = document.createElement('div');
             container.className = 'color-input';
             
-            // Create color picker container
-            const pickerContainer = document.createElement('div');
-            pickerContainer.className = 'color-picker-container';
+            // Create text input
+            const textInput = document.createElement('input');
+            textInput.type = 'text';
+            textInput.id = `input_${setting.key}`;
+            textInput.value = value || setting.default;
+            textInput.placeholder = 'Contoh: #FF0000';
             
             // Create color picker
             const colorPicker = document.createElement('input');
             colorPicker.type = 'color';
-            colorPicker.className = 'color-picker';
             colorPicker.value = value || setting.default;
-            
-            // Create text input for hex value
-            const textInput = document.createElement('input');
-            textInput.type = 'text';
-            textInput.className = 'hex-input';
-            textInput.value = value || setting.default;
-            textInput.placeholder = '#RRGGBB';
-            textInput.id = `input_${setting.key}`;
+            colorPicker.style.width = '40px';
+            colorPicker.style.height = '40px';
+            colorPicker.style.cursor = 'pointer';
             
             // Create color preview box
             const previewBox = document.createElement('div');
@@ -444,46 +733,26 @@
                 previewBox.style.backgroundColor = 'transparent';
             }
             
-            // Update preview when inputs change
-            const updatePreviewBox = () => {
+            // Link color picker and text input
+            colorPicker.addEventListener('input', () => {
+                textInput.value = colorPicker.value;
                 try {
                     previewBox.style.backgroundColor = textInput.value;
                 } catch {
                     previewBox.style.backgroundColor = 'transparent';
                 }
-            };
-            
-            // Link color picker and text input
-            colorPicker.addEventListener('input', () => {
-                textInput.value = colorPicker.value;
-                updatePreviewBox();
             });
             
             textInput.addEventListener('input', () => {
-                // Validate hex format while typing
-                if (/^#?[0-9A-Fa-f]{0,6}$/.test(textInput.value)) {
-                    // Add # if missing
-                    if (textInput.value.charAt(0) !== '#' && textInput.value.length > 0) {
-                        textInput.value = '#' + textInput.value;
-                    }
-                    
-                    // Update color picker if valid hex
-                    if (/^#[0-9A-Fa-f]{6}$/.test(textInput.value)) {
-                        colorPicker.value = textInput.value;
-                    }
-                    
-                    updatePreviewBox();
-                } else {
-                    // Revert to previous value if invalid
-                    textInput.value = colorPicker.value;
+                if (/^#[0-9A-Fa-f]{6}$/i.test(textInput.value)) {
+                    colorPicker.value = textInput.value;
+                    previewBox.style.backgroundColor = textInput.value;
                 }
             });
             
-            // Add elements to container
-            pickerContainer.appendChild(colorPicker);
-            pickerContainer.appendChild(textInput);
-            pickerContainer.appendChild(previewBox);
-            container.appendChild(pickerContainer);
+            container.appendChild(colorPicker);
+            container.appendChild(textInput);
+            container.appendChild(previewBox);
             
             return container;
         }
@@ -506,71 +775,29 @@
                     // Value input cell
                     const valueCell = document.createElement('td');
                     
-                    if (key === 'WarnaBackground') {
+                    if (key === 'BackgroundGradient') {
+                        // Gradient input field
                         const container = document.createElement('div');
-                        container.className = 'color-input';
+                        container.className = 'gradient-input';
                         
-                        const pickerContainer = document.createElement('div');
-                        pickerContainer.className = 'color-picker-container';
+                        const textarea = document.createElement('textarea');
+                        textarea.id = `input_${key}`;
+                        textarea.value = settings[key] || '';
+                        textarea.placeholder = 'linear-gradient(135deg, #3498db 0%, #2c3e50 100%)';
+                        textarea.rows = 3;
                         
-                        const colorPicker = document.createElement('input');
-                        colorPicker.type = 'color';
-                        colorPicker.className = 'color-picker';
-                        colorPicker.value = settings[key] || '#ffffff';
-                        
-                        const textInput = document.createElement('input');
-                        textInput.type = 'text';
-                        textInput.className = 'hex-input';
-                        textInput.id = `input_${key}`;
-                        textInput.value = settings[key] || '#ffffff';
-                        textInput.placeholder = '#RRGGBB';
-                        
+                        // Gradient preview box
                         const previewBox = document.createElement('div');
-                        previewBox.className = 'color-preview-box';
+                        previewBox.className = 'gradient-preview';
+                        previewBox.id = `preview_${key}`;
                         try {
-                            previewBox.style.backgroundColor = settings[key] || '#ffffff';
+                            previewBox.style.background = settings[key] || 'linear-gradient(135deg, #3498db 0%, #2c3e50 100%)';
                         } catch {
-                            previewBox.style.backgroundColor = 'transparent';
+                            previewBox.style.background = 'linear-gradient(135deg, #3498db 0%, #2c3e50 100%)';
                         }
                         
-                        // Link color picker and text input
-                        colorPicker.addEventListener('input', () => {
-                            textInput.value = colorPicker.value;
-                            try {
-                                previewBox.style.backgroundColor = textInput.value;
-                            } catch {
-                                previewBox.style.backgroundColor = 'transparent';
-                            }
-                        });
-                        
-                        textInput.addEventListener('input', () => {
-                            // Validate hex format while typing
-                            if (/^#?[0-9A-Fa-f]{0,6}$/.test(textInput.value)) {
-                                // Add # if missing
-                                if (textInput.value.charAt(0) !== '#' && textInput.value.length > 0) {
-                                    textInput.value = '#' + textInput.value;
-                                }
-                                
-                                // Update color picker if valid hex
-                                if (/^#[0-9A-Fa-f]{6}$/.test(textInput.value)) {
-                                    colorPicker.value = textInput.value;
-                                }
-                                
-                                try {
-                                    previewBox.style.backgroundColor = textInput.value;
-                                } catch {
-                                    previewBox.style.backgroundColor = 'transparent';
-                                }
-                            } else {
-                                // Revert to previous value if invalid
-                                textInput.value = colorPicker.value;
-                            }
-                        });
-                        
-                        pickerContainer.appendChild(colorPicker);
-                        pickerContainer.appendChild(textInput);
-                        pickerContainer.appendChild(previewBox);
-                        container.appendChild(pickerContainer);
+                        container.appendChild(textarea);
+                        container.appendChild(previewBox);
                         valueCell.appendChild(container);
                     } 
                     else if (key === 'LogoAplikasi' || key === 'ImageBackground') {
@@ -593,9 +820,10 @@
                     
                     // Save button cell
                     const actionCell = document.createElement('td');
+                    actionCell.className = 'action-cell';
                     const saveButton = document.createElement('button');
                     saveButton.className = 'save-btn';
-                    saveButton.textContent = 'Save';
+                    saveButton.innerHTML = '<i class="fas fa-save"></i> Save';
                     saveButton.onclick = () => {
                         const newValue = document.getElementById(`input_${key}`).value;
                         updateSetting(key, newValue);
@@ -638,9 +866,10 @@
                     
                     // Save button cell
                     const actionCell = document.createElement('td');
+                    actionCell.className = 'action-cell';
                     const saveButton = document.createElement('button');
                     saveButton.className = 'save-btn';
-                    saveButton.textContent = 'Save';
+                    saveButton.innerHTML = '<i class="fas fa-save"></i> Save';
                     saveButton.onclick = () => {
                         const colorValue = document.getElementById(`input_${setting.key}`).value;
                         updateColorSetting(setting.key, colorValue);
@@ -672,6 +901,7 @@
             createSettingsTable();
             createColorSettingsTable();
             loadCustomerServiceSettings();
+            applyColorSettings();
         };
     </script>
 </body>
