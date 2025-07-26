@@ -134,6 +134,29 @@
         .preview-secondary-button {
             background-color: var(--secondary-button, rgb(46, 204, 113));
         }
+        .color-picker-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .color-input-text {
+            flex: 1;
+        }
+        .color-picker {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 0;
+        }
+        .hex-input {
+            width: 100px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+        }
     </style>
 </head>
 <body>
@@ -295,6 +318,12 @@
 
         // Function to update color settings in Firebase
         function updateColorSetting(key, value) {
+            // Validate hex color format
+            if (!/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(value)) {
+                showStatus(`Invalid hex color format for ${key}`, false);
+                return;
+            }
+            
             const updates = {};
             updates[key] = value;
             
@@ -383,17 +412,28 @@
             });
         }
 
-        // Function to create color input field
+        // Function to create color input field with color picker
         function createColorInputField(setting, value) {
             const container = document.createElement('div');
             container.className = 'color-input';
             
-            // Create text input
+            // Create color picker container
+            const pickerContainer = document.createElement('div');
+            pickerContainer.className = 'color-picker-container';
+            
+            // Create color picker
+            const colorPicker = document.createElement('input');
+            colorPicker.type = 'color';
+            colorPicker.className = 'color-picker';
+            colorPicker.value = value || setting.default;
+            
+            // Create text input for hex value
             const textInput = document.createElement('input');
             textInput.type = 'text';
-            textInput.id = `input_${setting.key}`;
+            textInput.className = 'hex-input';
             textInput.value = value || setting.default;
-            textInput.placeholder = 'Contoh: red, #FF0000, rgb(255,0,0)';
+            textInput.placeholder = '#RRGGBB';
+            textInput.id = `input_${setting.key}`;
             
             // Create color preview box
             const previewBox = document.createElement('div');
@@ -404,17 +444,46 @@
                 previewBox.style.backgroundColor = 'transparent';
             }
             
-            // Update preview when input changes
-            textInput.addEventListener('input', () => {
+            // Update preview when inputs change
+            const updatePreviewBox = () => {
                 try {
                     previewBox.style.backgroundColor = textInput.value;
                 } catch {
                     previewBox.style.backgroundColor = 'transparent';
                 }
+            };
+            
+            // Link color picker and text input
+            colorPicker.addEventListener('input', () => {
+                textInput.value = colorPicker.value;
+                updatePreviewBox();
             });
             
-            container.appendChild(textInput);
-            container.appendChild(previewBox);
+            textInput.addEventListener('input', () => {
+                // Validate hex format while typing
+                if (/^#?[0-9A-Fa-f]{0,6}$/.test(textInput.value)) {
+                    // Add # if missing
+                    if (textInput.value.charAt(0) !== '#' && textInput.value.length > 0) {
+                        textInput.value = '#' + textInput.value;
+                    }
+                    
+                    // Update color picker if valid hex
+                    if (/^#[0-9A-Fa-f]{6}$/.test(textInput.value)) {
+                        colorPicker.value = textInput.value;
+                    }
+                    
+                    updatePreviewBox();
+                } else {
+                    // Revert to previous value if invalid
+                    textInput.value = colorPicker.value;
+                }
+            });
+            
+            // Add elements to container
+            pickerContainer.appendChild(colorPicker);
+            pickerContainer.appendChild(textInput);
+            pickerContainer.appendChild(previewBox);
+            container.appendChild(pickerContainer);
             
             return container;
         }
@@ -441,11 +510,20 @@
                         const container = document.createElement('div');
                         container.className = 'color-input';
                         
+                        const pickerContainer = document.createElement('div');
+                        pickerContainer.className = 'color-picker-container';
+                        
+                        const colorPicker = document.createElement('input');
+                        colorPicker.type = 'color';
+                        colorPicker.className = 'color-picker';
+                        colorPicker.value = settings[key] || '#ffffff';
+                        
                         const textInput = document.createElement('input');
                         textInput.type = 'text';
+                        textInput.className = 'hex-input';
                         textInput.id = `input_${key}`;
                         textInput.value = settings[key] || '#ffffff';
-                        textInput.placeholder = 'Contoh: white, #FFFFFF, rgb(255,255,255)';
+                        textInput.placeholder = '#RRGGBB';
                         
                         const previewBox = document.createElement('div');
                         previewBox.className = 'color-preview-box';
@@ -455,7 +533,9 @@
                             previewBox.style.backgroundColor = 'transparent';
                         }
                         
-                        textInput.addEventListener('input', () => {
+                        // Link color picker and text input
+                        colorPicker.addEventListener('input', () => {
+                            textInput.value = colorPicker.value;
                             try {
                                 previewBox.style.backgroundColor = textInput.value;
                             } catch {
@@ -463,8 +543,34 @@
                             }
                         });
                         
-                        container.appendChild(textInput);
-                        container.appendChild(previewBox);
+                        textInput.addEventListener('input', () => {
+                            // Validate hex format while typing
+                            if (/^#?[0-9A-Fa-f]{0,6}$/.test(textInput.value)) {
+                                // Add # if missing
+                                if (textInput.value.charAt(0) !== '#' && textInput.value.length > 0) {
+                                    textInput.value = '#' + textInput.value;
+                                }
+                                
+                                // Update color picker if valid hex
+                                if (/^#[0-9A-Fa-f]{6}$/.test(textInput.value)) {
+                                    colorPicker.value = textInput.value;
+                                }
+                                
+                                try {
+                                    previewBox.style.backgroundColor = textInput.value;
+                                } catch {
+                                    previewBox.style.backgroundColor = 'transparent';
+                                }
+                            } else {
+                                // Revert to previous value if invalid
+                                textInput.value = colorPicker.value;
+                            }
+                        });
+                        
+                        pickerContainer.appendChild(colorPicker);
+                        pickerContainer.appendChild(textInput);
+                        pickerContainer.appendChild(previewBox);
+                        container.appendChild(pickerContainer);
                         valueCell.appendChild(container);
                     } 
                     else if (key === 'LogoAplikasi' || key === 'ImageBackground') {
