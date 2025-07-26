@@ -7,78 +7,17 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        h1 {
-            color: #333;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-            position: sticky;
-            top: 0;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 5px;
-            box-sizing: border-box;
-        }
-        .save-btn {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 12px;
-            margin: 2px 2px;
-            cursor: pointer;
-            border-radius: 3px;
-        }
-        .save-btn:hover {
-            background-color: #45a049;
-        }
-        .status {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 3px;
-        }
-        .success {
-            background-color: #dff0d8;
-            color: #3c763d;
-        }
-        .error {
-            background-color: #f2dede;
-            color: #a94442;
-        }
+        /* ... (keep your existing styles unchanged) ... */
     </style>
 </head>
 <body>
-    <h1>ASIAPAYMENT Settings</h1>
+    <h1>ASIAPAYMENT Transaction Format Settings</h1>
     <div id="status" class="status" style="display: none;"></div>
     <table id="settingsTable">
         <thead>
             <tr>
-                <th>Setting Name</th>
-                <th>Value</th>
+                <th>Command Name</th>
+                <th>Format</th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -88,7 +27,7 @@
     </table>
 
     <script>
-        // Your Firebase configuration
+        // Firebase configuration
         const firebaseConfig = {
             databaseURL: "https://steady-fin-368617-default-rtdb.firebaseio.com/"
         };
@@ -96,10 +35,12 @@
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        const settingsRef = database.ref('ASIAPAYMENT/setting');
+        
+        // Reference to the FormatTrx node
+        const formatTrxRef = database.ref('ASIAPAYMENT/setting/FormatTrx');
 
-        // List of all setting keys
-        const settingKeys = [
+        // List of all transaction commands
+        const transactionCommands = [
             "AktifkanDL", "BatalTransaksi", "BatalTransferSaldo", "CekHarga", "CekMarkup",
             "CekMarkupProduk", "CekMarkupProduk2", "CekMutasi", "CekMutasi2", "CekOid",
             "CekSaldo", "CekSaldoDL", "CekStatusTransaksi", "CekStatusTransaksi2", "CekStatusTransaksi3",
@@ -129,61 +70,65 @@
             statusDiv.className = isSuccess ? 'status success' : 'status error';
             statusDiv.style.display = 'block';
             
-            // Hide the status after 3 seconds
             setTimeout(() => {
                 statusDiv.style.display = 'none';
             }, 3000);
         }
 
-        // Function to update a setting in Firebase
-        function updateSetting(key, value) {
-            const updates = {};
-            updates[key] = value;
+        // Function to update a transaction format in Firebase
+        function updateFormat(command, format) {
+            const updateData = {};
+            updateData[command] = format;
             
-            settingsRef.update(updates)
+            formatTrxRef.update(updateData)
                 .then(() => {
-                    showStatus(`Successfully updated ${key} to ${value}`, true);
+                    showStatus(`Updated ${command} format successfully!`, true);
                 })
                 .catch((error) => {
-                    showStatus(`Error updating ${key}: ${error.message}`, false);
+                    showStatus(`Error updating ${command}: ${error.message}`, false);
                 });
         }
 
-        // Function to create the table
-        function createTable() {
+        // Function to create the settings table
+        function createFormatsTable() {
             const tableBody = document.getElementById('settingsBody');
             
-            // Fetch all settings data
-            settingsRef.once('value')
+            // Fetch existing formats
+            formatTrxRef.once('value')
                 .then((snapshot) => {
-                    const settingsData = snapshot.val();
+                    const formatsData = snapshot.val() || {};
                     
-                    // Create a row for each setting key
-                    settingKeys.forEach(key => {
+                    // Create rows for each transaction command
+                    transactionCommands.forEach(command => {
                         const row = document.createElement('tr');
                         
-                        // Setting name cell
+                        // Command name cell
                         const nameCell = document.createElement('td');
-                        nameCell.textContent = key;
+                        nameCell.textContent = command;
                         row.appendChild(nameCell);
                         
-                        // Value input cell
-                        const valueCell = document.createElement('td');
+                        // Format input cell
+                        const formatCell = document.createElement('td');
                         const input = document.createElement('input');
                         input.type = 'text';
-                        input.id = `input_${key}`;
-                        input.value = settingsData[key] || '';
-                        valueCell.appendChild(input);
-                        row.appendChild(valueCell);
+                        input.id = `input_${command}`;
+                        input.value = formatsData[command] || '';
+                        input.placeholder = `Enter format for ${command}`;
+                        formatCell.appendChild(input);
+                        row.appendChild(formatCell);
                         
                         // Save button cell
                         const actionCell = document.createElement('td');
                         const saveButton = document.createElement('button');
-                        saveButton.textContent = 'Save';
+                        saveButton.textContent = 'Save Format';
                         saveButton.className = 'save-btn';
                         saveButton.onclick = () => {
-                            const newValue = input.value;
-                            updateSetting(key, newValue);
+                            const newFormat = input.value.trim();
+                            if (newFormat) {
+                                updateFormat(command, newFormat);
+                            } else {
+                                showStatus(`Format cannot be empty for ${command}`, false);
+                            }
                         };
                         actionCell.appendChild(saveButton);
                         row.appendChild(actionCell);
@@ -192,12 +137,12 @@
                     });
                 })
                 .catch((error) => {
-                    showStatus(`Error loading settings: ${error.message}`, false);
+                    showStatus(`Error loading formats: ${error.message}`, false);
                 });
         }
 
         // Initialize the table when the page loads
-        window.onload = createTable;
+        window.onload = createFormatsTable;
     </script>
 </body>
 </html>
